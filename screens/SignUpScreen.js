@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, StyleSheet, Alert } from "react-native";
-import { supabase } from "../supabaseClient"; // Ensure this points to your initialized Supabase client
+import { View, StyleSheet, Alert, Image } from "react-native";
+import { TextInput, Button } from "react-native-paper";
+import { supabase } from "../supabaseClient";
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -27,21 +28,29 @@ const SignUpScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Image
+        source={require("../assets/logo1.webp")} // Adjust path as necessary
+        style={styles.logo}
+      />
       <TextInput
-        style={styles.input}
-        placeholder="Email"
+        label="Email"
+        mode="outlined"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
+        style={styles.input}
       />
       <TextInput
-        style={styles.input}
-        placeholder="Password"
+        label="Password"
+        mode="outlined"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        style={styles.input}
       />
-      <Button title="Sign Up" onPress={handleSignUp} />
+      <Button mode="contained" onPress={handleSignUp} style={styles.button}>
+        Sign Up
+      </Button>
     </View>
   );
 };
@@ -52,12 +61,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  logo: {
+    width: 300, // Adjust width as needed
+    height: 300, // Adjust height as needed
+    marginBottom: 20,
+    resizeMode: "contain",
+  },
   input: {
     width: "80%",
-    height: 40,
-    margin: 10,
-    borderWidth: 1,
-    padding: 10,
+    marginVertical: 10,
+  },
+  button: {
+    marginTop: 10,
+    width: "80%",
   },
 });
 

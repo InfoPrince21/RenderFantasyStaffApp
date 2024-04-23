@@ -75,9 +75,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logo: {
-    width: 150, // Adjust the size according to your design needs
-    height: 150, // Ensure the aspect ratio remains consistent
+    width: 300, // Increased width
+    height: 300, // Increased height to maintain aspect ratio
     marginBottom: 20,
+    resizeMode: "contain", // Ensures the entire logo is visible and scales properly
   },
   input: {
     width: "90%",

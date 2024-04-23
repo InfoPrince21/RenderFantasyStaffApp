@@ -3,32 +3,36 @@ import { View, StyleSheet, Image } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { supabase } from "../supabaseClient";
 
-const ForgotPasswordScreen = ({ navigation }) => {
-  const [email, setEmail] = useState(""); // Changed state variable name to email
+const ResetPasswordScreen = ({ navigation, route }) => {
+  const [newPassword, setNewPassword] = useState("");
 
   async function handleResetPassword() {
+    const { email } = route.params; // Extract email from route params
     try {
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+      // Call Supabase method to update password
+      const { data, error } = await supabase.auth.updateUser({
+        email: email, // Use the email extracted from route params
+        password: newPassword,
+      });
       if (error) {
         throw error;
       }
-      console.log("Password reset email sent successfully:", data);
-      // Optionally, navigate to another screen
+      console.log("Password reset successfully:", data);
+      // Optionally navigate to another screen
     } catch (error) {
-      console.error("Error sending password reset email:", error);
+      console.error("Error resetting password:", error);
     }
   }
-
 
   return (
     <View style={styles.container}>
       <Image source={require("../assets/logo1.webp")} style={styles.logo} />
       <TextInput
-        label="Email" // Change label to "Email"
+        label="New Password"
         mode="outlined"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
+        value={newPassword}
+        onChangeText={setNewPassword}
+        secureTextEntry
         style={styles.input}
       />
       <Button
@@ -64,4 +68,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ForgotPasswordScreen;
+export default ResetPasswordScreen;
