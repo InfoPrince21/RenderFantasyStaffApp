@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, StyleSheet, Alert } from "react-native";
-import { supabase } from "../supabaseClient"; // Ensure this points to your initialized Supabase client
+import { View, StyleSheet, Alert, Image } from "react-native";
+import { TextInput, Button } from "react-native-paper";
+import { supabase } from "../supabaseClient";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -20,36 +21,48 @@ const LoginScreen = ({ navigation }) => {
 
     if (data) {
       console.log("User signed in successfully:", data);
+      // Optionally navigate to another screen here
     }
   }
 
   return (
     <View style={styles.container}>
+      <Image
+        source={require("../assets/logo1.webp")} // Adjust path as necessary
+        style={styles.logo}
+      />
       <TextInput
-        style={styles.input}
-        placeholder="Email"
+        label="Email"
+        mode="outlined"
         value={email}
         onChangeText={setEmail}
-        keyboardType="email-address"
+        style={styles.input}
       />
       <TextInput
-        style={styles.input}
-        placeholder="Password"
+        label="Password"
+        mode="outlined"
+        secureTextEntry
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
+        style={styles.input}
       />
-      <Button title="Sign In" onPress={signInWithEmail} />
+      <Button mode="contained" onPress={signInWithEmail} style={styles.button}>
+        Sign In
+      </Button>
       <Button
-        title="Forgot Password?"
+        mode="text"
         onPress={() => navigation.navigate("ForgotPassword")}
-        color="#1E90FF" // Custom color for the button (optional)
-      />
+        style={styles.textButton}
+      >
+        Forgot Password?
+      </Button>
       <Button
-        title="No account? Sign Up"
+        mode="text"
         onPress={() => navigation.navigate("SignUp")}
-        color="#20B2AA" // Custom color for the button (optional)
-      />
+        style={styles.textButton}
+      >
+        No account? Sign Up
+      </Button>
     </View>
   );
 };
@@ -61,12 +74,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
+  logo: {
+    width: 150, // Adjust the size according to your design needs
+    height: 150, // Ensure the aspect ratio remains consistent
+    marginBottom: 20,
+  },
   input: {
-    width: "80%",
-    height: 40,
-    margin: 10,
-    borderWidth: 1,
-    padding: 10,
+    width: "90%",
+    marginBottom: 10,
+  },
+  button: {
+    marginTop: 10,
+    width: "90%",
+  },
+  textButton: {
+    marginTop: 5,
+    width: "90%",
   },
 });
 

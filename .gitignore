@@ -6,7 +6,6 @@ node_modules/
 # Expo
 .expo/
 
-
 # Native
 *.orig.*
 *.jks

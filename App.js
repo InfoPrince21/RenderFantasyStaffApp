@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { store } from "./store/store.js";
-import { Provider } from "react-redux";
+import { Provider as ReduxProvider } from "react-redux";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
+import { Provider as PaperProvider, DefaultTheme } from "react-native-paper";
+import { store } from "./store/store.js";
 import { supabase } from "./supabaseClient";
 import {
   HomeScreen,
@@ -65,6 +66,22 @@ function DrawerNavigator() {
   );
 }
 
+const MyTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: "#005f73",
+    accent: "#e9d8a6",
+    background: "#001219",
+    surface: "#0a9396",
+    text: "#94d2bd",
+    onSurface: "#eee",
+    disabled: "#555",
+    placeholder: "#ccc",
+    backdrop: "#333",
+  },
+};
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -86,11 +103,13 @@ function App() {
   }, [checkAuthState]);
 
   return (
-    <Provider store={store}>
-      <NavigationContainer>
-        {isAuthenticated ? <DrawerNavigator /> : <AuthNavigator />}
-      </NavigationContainer>
-    </Provider>
+    <PaperProvider theme={MyTheme}>
+      <ReduxProvider store={store}>
+        <NavigationContainer>
+          {isAuthenticated ? <DrawerNavigator /> : <AuthNavigator />}
+        </NavigationContainer>
+      </ReduxProvider>
+    </PaperProvider>
   );
 }
 
