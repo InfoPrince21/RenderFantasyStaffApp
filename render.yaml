@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: expo-web-app
+    env: static
+    buildCommand: npm run web-build
+    staticPublishPath: ./web-build
+    # Replace 'main' with your branch name if different
+    branch: main
+    # Add the root directory if your project is not in the root
+    rootDirectory: ./
+    # Optionally add custom domains (you need to configure DNS settings for custom domains)
+  
+    
