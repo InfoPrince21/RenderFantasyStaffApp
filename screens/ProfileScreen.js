@@ -9,16 +9,16 @@ import {
   ScrollView,
   Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../supabaseClient";
-
-// Import Airtable API
-import { AirtableApiKey, AirtableBaseId } from "../airtableconfig"; // Assuming you have a config file
+import { AirtableApiKey, AirtableBaseId } from "../airtableconfig";
 
 const ProfileScreen = ({ navigation }) => {
   const [userEmail, setUserEmail] = useState("");
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     const handleAuthStateChange = (event, session) => {
@@ -32,6 +32,12 @@ const ProfileScreen = ({ navigation }) => {
     };
 
     const authListener = supabase.auth.onAuthStateChange(handleAuthStateChange);
+    (async () => {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        alert("Sorry, we need camera roll permissions to make this work!");
+      }
+    })();
 
     return () => {
       authListener.unsubscribe();
@@ -48,14 +54,13 @@ const ProfileScreen = ({ navigation }) => {
         },
       });
       const data = await response.json();
-      console.log("Fetched data:", data); // Add this line for debugging
       const userRecords = data.records.filter(
         (record) => record.fields.Email === email
       );
-      setRecords(userRecords || []); // Set only the records that match the user's email
+      setRecords(userRecords || []);
     } catch (error) {
       console.error("Error fetching records from Airtable:", error);
-      // Handle error
+      Alert.alert("Error", "Failed to fetch records");
     } finally {
       setLoading(false);
     }
@@ -67,6 +72,7 @@ const ProfileScreen = ({ navigation }) => {
       if (error) throw error;
     } catch (error) {
       console.error("Error signing out:", error);
+      Alert.alert("Sign Out Failed", error.message);
     }
   };
 
@@ -93,6 +99,60 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (result.cancelled) {
+      console.log("User cancelled image selection.");
+    } else if (result.errorCode) {
+      console.error("ImagePicker Error: ", result.errorMessage);
+      Alert.alert("Image Picker Error", result.errorMessage);
+    } else if (result.assets && result.assets.length > 0) {
+      const selectedAsset = result.assets[0];
+      setSelectedImage(selectedAsset.uri);
+      uploadImageToSupabase(selectedAsset);
+    } else {
+      console.log("No assets found in result.");
+      Alert.alert("Error", "No image found.");
+    }
+  };
+
+  const uploadImageToSupabase = async (asset) => {
+    const fileUri = asset.uri;
+    if (!fileUri) {
+      console.error("No file URI available");
+      Alert.alert("Upload Failed", "No file URI available");
+      return;
+    }
+
+    const fileName = fileUri.split("/").pop();
+    const fileExtension = fileName ? fileName.split(".").pop() : "png"; // Default to 'png' if extension is not found
+    const mimeType = `image/${fileExtension}`;
+    const filePath = `pictures/${Date.now()}-${fileName}`;
+
+    try {
+      const { data, error } = await supabase.storage
+        .from("FantasyStaffBucket")
+        .upload(filePath, {
+          uri: fileUri,
+          type: mimeType,
+          name: fileName,
+        }, { upsert: true });
+
+      if (error) throw new Error(error.message);
+      console.log("Uploaded image: ", data);
+      Alert.alert("Upload Successful", "Image uploaded successfully.");
+    } catch (error) {
+      console.error("Error uploading image: ", error);
+      Alert.alert("Upload Error", error.message || "Failed to upload image.");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
@@ -108,7 +168,7 @@ const ProfileScreen = ({ navigation }) => {
               <Text>Email: {record.fields.Email}</Text>
               <Text>Name: {record.fields.Name}</Text>
               <Text>About Me: {record.fields.AboutMe}</Text>
-              {record.fields.picture && (
+              {record.fields.Picture && (
                 <Image
                   source={{ uri: record.fields.Picture[0].url }}
                   style={styles.image}
@@ -131,6 +191,13 @@ const ProfileScreen = ({ navigation }) => {
         disabled={loading}
       />
       <Button title="Sign Out" onPress={handleSignOut} />
+      <Button title="Pick an image from camera roll" onPress={pickImage} />
+      {selectedImage && (
+        <Image
+          source={{ uri: selectedImage }}
+          style={{ width: 200, height: 200 }}
+        />
+      )}
     </View>
   );
 };
