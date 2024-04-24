@@ -1,50 +1,67 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, StyleSheet, Alert } from "react-native";
-import { supabase } from "../supabaseClient"; // Ensure this points to your initialized Supabase client
+import { View, Text, Button, TextInput, StyleSheet, Alert } from "react-native";
+import { supabase } from "../supabaseClient";
 
 const ProfileScreen = ({ navigation }) => {
   const [userEmail, setUserEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Function to handle authentication state change
     const handleAuthStateChange = (event, session) => {
       if (session && session.user) {
-        setUserEmail(session.user.email); // Update email when session changes
+        setUserEmail(session.user.email);
       } else {
-        setUserEmail(""); // Clear email if there is no session
-        navigation.navigate("Home"); // Redirect to home page if signed out
+        setUserEmail("");
+        navigation.navigate("Home");
       }
     };
 
-    // Subscribe to Supabase auth changes
     const authListener = supabase.auth.onAuthStateChange(handleAuthStateChange);
-
-    // Check initial user and set state
     fetchUserInfo();
 
-    // Unsubscribe from auth changes when component unmounts
     return () => {
       authListener.unsubscribe();
     };
   }, []);
 
-  // Function to fetch user info from current session
   const fetchUserInfo = async () => {
     const session = supabase.auth.session();
     if (session && session.user) {
-      setUserEmail(session.user.email); // Set user email from current session
+      setUserEmail(session.user.email);
     }
   };
 
-  // Function to handle sign out
   const handleSignOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      // No need for redundant navigation, as the auth listener already handles this
     } catch (error) {
       console.error("Error signing out: ", error);
       Alert.alert("Sign Out Failed", error.message);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (newPassword.length < 8) {
+      Alert.alert("Error", "Password must be at least 8 characters long.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) throw error;
+
+      Alert.alert("Success", "Password updated successfully.");
+      setNewPassword(""); // Clear the password input field
+    } catch (error) {
+      console.error("Error updating password:", error);
+      Alert.alert("Update Failed", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -52,6 +69,18 @@ const ProfileScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
       <Text style={styles.userInfo}>Email: {userEmail}</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={setNewPassword}
+        value={newPassword}
+        placeholder="Enter new password"
+        secureTextEntry={true}
+      />
+      <Button
+        title={loading ? "Updating..." : "Update Password"}
+        onPress={handleUpdatePassword}
+        disabled={loading}
+      />
       <Button title="Sign Out" onPress={handleSignOut} />
     </View>
   );
@@ -71,6 +100,14 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     fontSize: 18,
+    marginBottom: 20,
+  },
+  input: {
+    height: 40,
+    width: "100%",
+    borderColor: "gray",
+    borderWidth: 1,
+    paddingHorizontal: 10,
     marginBottom: 20,
   },
 });

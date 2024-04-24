@@ -1,43 +1,68 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Image } from "react-native";
-import { TextInput, Button } from "react-native-paper";
+import { View, StyleSheet, Image, Alert } from "react-native";
+import { TextInput, Button, Snackbar } from "react-native-paper";
 import { supabase } from "../supabaseClient";
 
 const ForgotPasswordScreen = ({ navigation }) => {
-  const [email, setEmail] = useState(""); // Changed state variable name to email
+  const [email, setEmail] = useState("");
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const showSnackbar = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarVisible(true);
+  };
+
+  const isValidEmail = (email) => {
+    return /\S+@\S+\.\S+/.test(email);
+  };
 
   async function handleResetPassword() {
+    if (!isValidEmail(email)) {
+      showSnackbar("Please enter a valid email address");
+      return;
+    }
+
     try {
       const { data, error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) {
         throw error;
       }
-      console.log("Password reset email sent successfully:", data);
-      // Optionally, navigate to another screen
+      showSnackbar("Password reset email sent successfully");
+      navigation.navigate("ResetPassword", { email: email });
     } catch (error) {
-      console.error("Error sending password reset email:", error);
+      console.error("Error sending password reset email:", error.message);
+      showSnackbar(error.message);
     }
   }
-
 
   return (
     <View style={styles.container}>
       <Image source={require("../assets/logo1.webp")} style={styles.logo} />
       <TextInput
-        label="Email" // Change label to "Email"
+        label="Email"
         mode="outlined"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         style={styles.input}
+        accessibilityLabel="Enter your email address"
       />
       <Button
         mode="contained"
         onPress={handleResetPassword}
         style={styles.button}
+        accessibilityLabel="Reset your password"
       >
         Reset Password
       </Button>
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </View>
   );
 };
@@ -50,8 +75,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   logo: {
-    width: 300, // Adjust width as needed
-    height: 300, // Adjust height as needed
+    width: 300,
+    height: 300,
     marginBottom: 20,
     resizeMode: "contain",
   },
