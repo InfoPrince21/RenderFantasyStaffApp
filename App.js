@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Provider as ReduxProvider } from "react-redux";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  DefaultTheme as NavigationDefaultTheme,
+} from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
-import { Provider as PaperProvider, DefaultTheme } from "react-native-paper";
+import {
+  Provider as PaperProvider,
+  DefaultTheme as PaperDefaultTheme,
+} from "react-native-paper";
 import { store } from "./store/store.js";
 import { supabase } from "./supabaseClient";
 import {
@@ -32,6 +38,36 @@ import {
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
+
+const MyTheme = {
+  ...PaperDefaultTheme,
+  colors: {
+    ...PaperDefaultTheme.colors,
+    primary: "#005f73",
+    accent: "#e9d8a6",
+    background: "#001219",
+    surface: "#0a9396",
+    text: "#94d2bd",
+    onSurface: "#eee",
+    disabled: "#555",
+    placeholder: "#ccc",
+    backdrop: "#333",
+  },
+};
+
+// Create a matching navigation theme
+const NavigationTheme = {
+  ...NavigationDefaultTheme,
+  colors: {
+    ...NavigationDefaultTheme.colors,
+    primary: "#0077b6", // A vibrant, deeper blue for primary actions
+    background: "#fafafa", // Off-white, almost gray, soft on the eyes
+    card: "#ffffff", // Pure white for cards to maintain clear distinction from the background
+    text: "#003566", // Navy blue for text, offers good readability
+    border: "#bbbbbb", // Soft gray for borders to subtly define spaces without harsh contrasts
+    notification: "#ef476f", // Bright fuchsia for notifications to pop against the softer background
+  },
+};
 
 function AuthNavigator() {
   return (
@@ -68,37 +104,16 @@ function DrawerNavigator() {
   );
 }
 
-const MyTheme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: "#005f73",
-    accent: "#e9d8a6",
-    background: "#001219",
-    surface: "#0a9396",
-    text: "#94d2bd",
-    onSurface: "#eee",
-    disabled: "#555",
-    placeholder: "#ccc",
-    backdrop: "#333",
-  },
-};
-
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const checkAuthState = useCallback(async (event, session) => {
-    if (session) {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-    }
+    setIsAuthenticated(!!session);
   }, []);
 
   useEffect(() => {
     const { data: authListener } =
       supabase.auth.onAuthStateChange(checkAuthState);
-
     return () => {
       authListener.unsubscribe();
     };
@@ -107,7 +122,7 @@ function App() {
   return (
     <PaperProvider theme={MyTheme}>
       <ReduxProvider store={store}>
-        <NavigationContainer>
+        <NavigationContainer theme={NavigationTheme}>
           {isAuthenticated ? <DrawerNavigator /> : <AuthNavigator />}
         </NavigationContainer>
       </ReduxProvider>

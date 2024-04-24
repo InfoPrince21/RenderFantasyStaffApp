@@ -1,24 +1,32 @@
 import React, { useState } from "react";
 import { View, StyleSheet, Alert, Image } from "react-native";
 import { TextInput, Button } from "react-native-paper";
+import axios from "axios"; // Import Axios for HTTP requests
 import { supabase } from "../supabaseClient";
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const AIRTABLE_BASE_ID = "appmqv083cLppisF5"; // Replace with your Airtable Base ID
+  const AIRTABLE_API_KEY =
+    "patgWojlv2ALaAC1H.7ee8c2073f2f3d8bf25a54fd1223394370fc3eb62ac0d0c023d458f2faa4c5ec"; // Replace with your Airtable API Key
+  const AIRTABLE_TABLE_NAME = "Profiles"; // The name of the table where data will be stored
+
   async function handleSignUp() {
     try {
       // Supabase sign-up
-      const { data, error } = await supabase.auth.signUp({
+      const { user, error } = await supabase.auth.signUp({
         email: email,
         password: password,
       });
 
       if (error) throw error;
 
-      console.log("User signed up", data);
-      // Pass email to ConfirmSignUpScreen via navigation parameters
+      // If sign-up is successful, post data to Airtable
+      await postEmailToAirtable(email);
+
+      console.log("User signed up", user);
       navigation.navigate("ConfirmSignUp", { email: email });
     } catch (error) {
       console.error("Error signing up:", error.message);
@@ -26,12 +34,39 @@ const SignUpScreen = ({ navigation }) => {
     }
   }
 
+  async function postEmailToAirtable(email) {
+    try {
+      const response = await axios.post(
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`,
+        {
+          fields: {
+            Email: email,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Email posted to Airtable:", response.data);
+    } catch (error) {
+      console.error(
+        "Error posting email to Airtable:",
+        error.response || error.message
+      );
+      Alert.alert(
+        "Airtable Update Failed",
+        error.message || "Failed to update Airtable."
+      );
+    }
+  }
+
   return (
     <View style={styles.container}>
-      <Image
-        source={require("../assets/logo1.webp")} // Adjust path as necessary
-        style={styles.logo}
-      />
+      <Image source={require("../assets/logo1.webp")} style={styles.logo} />
       <TextInput
         label="Email"
         mode="outlined"
@@ -62,8 +97,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    width: 300, // Adjust width as needed
-    height: 300, // Adjust height as needed
+    width: 300,
+    height: 300,
     marginBottom: 20,
     resizeMode: "contain",
   },
