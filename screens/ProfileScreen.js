@@ -121,37 +121,97 @@ const ProfileScreen = ({ navigation }) => {
       Alert.alert("Error", "No image found.");
     }
   };
+const uploadImageToSupabase = async (asset) => {
+  const fileUri = asset.uri;
+  if (!fileUri) {
+    console.error("No file URI available");
+    Alert.alert("Upload Failed", "No file URI available");
+    return;
+  }
 
-  const uploadImageToSupabase = async (asset) => {
-    const fileUri = asset.uri;
-    if (!fileUri) {
-      console.error("No file URI available");
-      Alert.alert("Upload Failed", "No file URI available");
-      return;
-    }
+  // Extract the username part of the email, assuming the email is standard with one '@' character
+  const emailUsername = userEmail
+    .substring(0, userEmail.lastIndexOf("@"))
+    .replace(/[^a-zA-Z0-9]/g, "_");
+  const fileName = fileUri.split("/").pop();
+  const fileExtension = fileName ? fileName.split(".").pop() : "png"; // Default to 'png' if extension is not found
+  const mimeType = `image/${fileExtension}`;
+  const filePath = `${emailUsername}/${Date.now()}-${fileName}`;
 
-    const fileName = fileUri.split("/").pop();
-    const fileExtension = fileName ? fileName.split(".").pop() : "png"; // Default to 'png' if extension is not found
-    const mimeType = `image/${fileExtension}`;
-    const filePath = `pictures/${Date.now()}-${fileName}`;
-
-    try {
-      const { data, error } = await supabase.storage
-        .from("FantasyStaffBucket")
-        .upload(filePath, {
+  try {
+    const { data, error } = await supabase.storage
+      .from("FantasyStaffBucket")
+      .upload(
+        filePath,
+        {
           uri: fileUri,
           type: mimeType,
           name: fileName,
-        }, { upsert: true });
+        },
+        { upsert: true }
+      );
 
-      if (error) throw new Error(error.message);
-      console.log("Uploaded image: ", data);
-      Alert.alert("Upload Successful", "Image uploaded successfully.");
+    if (error) throw new Error(error.message);
+
+    const imageUrl = supabase.storage
+      .from("FantasyStaffBucket")
+      .getPublicUrl(filePath).publicURL;
+    updateAirtableRecord(userEmail, imageUrl);
+    setSelectedImage(imageUrl); // Set the image URL to state
+  } catch (error) {
+    console.error("Error uploading image: ", error);
+    Alert.alert("Upload Error", error.message || "Failed to upload image.");
+  }
+};
+
+const updateAirtableRecord = async (email, imageUrl) => {
+  const recordToUpdate = records.find(
+    (record) => record.fields.Email === email
+  );
+  if (recordToUpdate) {
+    try {
+      const response = await fetch(
+        `https://api.airtable.com/v0/${AirtableBaseId}/Profiles/${recordToUpdate.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${AirtableApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fields: {
+              Picture: imageUrl,
+                },
+            },
+          ),
+        }
+      );
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          responseData.error && responseData.error.message
+            ? responseData.error.message
+            : "Unknown error from Airtable"
+        );
+      }
+      Alert.alert(
+        "Record Updated",
+        "Profile picture updated successfully in Airtable."
+      );
     } catch (error) {
-      console.error("Error uploading image: ", error);
-      Alert.alert("Upload Error", error.message || "Failed to upload image.");
+      console.error("Error updating record in Airtable:", error);
+      Alert.alert("Update Error", error.toString()); // Using error.toString() to capture the correct error message
     }
-  };
+  } else {
+    Alert.alert(
+      "No Record Found",
+      "No matching record found in Airtable for the current user."
+    );
+  }
+};
+
+
+
 
   return (
     <View style={styles.container}>

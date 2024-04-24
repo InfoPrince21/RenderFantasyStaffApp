@@ -83,6 +83,14 @@ function AuthNavigator() {
   );
 }
 
+function ProfileNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: true }}>
+      <Stack.Screen name="ProfileStack" component={ProfileScreen} />
+    </Stack.Navigator>
+  );
+}
+
 function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="Profile">
@@ -99,7 +107,7 @@ function DrawerNavigator() {
       <Drawer.Screen name="StudyGuide" component={StudyGuideScreen} />
       <Drawer.Screen name="Game History" component={GameHistoryScreen} />
       <Drawer.Screen name="Records" component={RecordsScreen} />
-      <Drawer.Screen name="Profile" component={ProfileScreen} />
+      <Drawer.Screen name="Profile" component={ProfileNavigator} />
     </Drawer.Navigator>
   );
 }
