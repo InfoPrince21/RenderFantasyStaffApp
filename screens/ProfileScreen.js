@@ -19,6 +19,8 @@ const ProfileScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+  const [uploadedFilePath, setUploadedFilePath] = useState("");
+
 
   useEffect(() => {
     const handleAuthStateChange = (event, session) => {
@@ -47,17 +49,14 @@ const ProfileScreen = ({ navigation }) => {
   const fetchRecords = async (email) => {
     setLoading(true);
     try {
-      const url = `https://api.airtable.com/v0/${AirtableBaseId}/Profiles`;
+      const url = `https://api.airtable.com/v0/${AirtableBaseId}/Profiles?filterByFormula=Email="${email}"`;
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${AirtableApiKey}`,
         },
       });
       const data = await response.json();
-      const userRecords = data.records.filter(
-        (record) => record.fields.Email === email
-      );
-      setRecords(userRecords || []);
+      setRecords(data.records || []);
     } catch (error) {
       console.error("Error fetching records from Airtable:", error);
       Alert.alert("Error", "Failed to fetch records");
@@ -88,7 +87,6 @@ const ProfileScreen = ({ navigation }) => {
         password: newPassword,
       });
       if (error) throw error;
-
       Alert.alert("Success", "Password updated successfully.");
       setNewPassword(""); // Clear the password input field
     } catch (error) {
@@ -115,102 +113,150 @@ const ProfileScreen = ({ navigation }) => {
     } else if (result.assets && result.assets.length > 0) {
       const selectedAsset = result.assets[0];
       setSelectedImage(selectedAsset.uri);
-      uploadImageToSupabase(selectedAsset);
     } else {
       console.log("No assets found in result.");
       Alert.alert("Error", "No image found.");
     }
   };
-const uploadImageToSupabase = async (asset) => {
-  const fileUri = asset.uri;
-  if (!fileUri) {
-    console.error("No file URI available");
-    Alert.alert("Upload Failed", "No file URI available");
+const submitPhoto = async () => {
+  setLoading(true);
+  try {
+    const emailUsername = userEmail
+      .substring(0, userEmail.lastIndexOf("@"))
+      .replace(/[^a-zA-Z0-9]/g, "_");
+    const fileName = selectedImage.split("/").pop();
+    const fileExtension = fileName.split(".").pop();
+    const mimeType = `image/${fileExtension}`;
+    const filePath = `${emailUsername}/${Date.now()}-${fileName}`;
+
+    const uploadResponse = await supabase.storage
+      .from("FantasyStaffBucket")
+      .upload(filePath, {
+        uri: selectedImage,
+        type: mimeType,
+        name: fileName,
+      });
+
+    if (uploadResponse.error) {
+      throw new Error(uploadResponse.error.message);
+    }
+
+    // Attempt to retrieve public URL
+    const { publicURL, error: urlError } = supabase.storage
+      .from("FantasyStaffBucket")
+      .getPublicUrl(filePath);
+
+    if (urlError) {
+      throw new Error(urlError.message);
+    }
+
+    const constructedUrl =
+      publicURL ||
+      `https://mquxomutiwqvihuvdsgd.supabase.co/storage/v1/object/public/FantasyStaffBucket/${filePath}`;
+
+    setUploadedFilePath(constructedUrl);
+    Alert.alert("Upload Successful", "Your photo was uploaded successfully.");
+    console.log("Public URL:", constructedUrl); // Logging the URL for debugging purposes
+    await updateAirtableRecord(userEmail, constructedUrl);
+  } catch (error) {
+    console.error("Upload Error:", error.message);
+    Alert.alert("Upload Error", error.message || "Failed to upload image.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+const updateAirtableRecord = async (email, uploadedFilePath) => {
+  try {
+    const recordToUpdate = records.find(
+      (record) => record.fields.Email === email
+    );
+    if (!recordToUpdate) {
+      Alert.alert(
+        "No Record Found",
+        "No matching record found in Airtable for the current user."
+      );
+      return;
+    }
+
+    const response = await fetch(
+      `https://api.airtable.com/v0/${AirtableBaseId}/Profiles/${recordToUpdate.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${AirtableApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fields: {
+            Picture:  uploadedFilePath ,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error && errorData.error.message
+          ? errorData.error.message
+          : "Unknown error from Airtable"
+      );
+    }
+
+    Alert.alert(
+      "Record Updated",
+      "Profile picture updated successfully in Airtable."
+    );
+  } catch (error) {
+    console.error("Error updating record in Airtable:", error);
+    Alert.alert("Update Error", error.toString());
+  }
+};
+
+
+  const savePhoto = async () => {
+  if (!uploadedFilePath) {
+    Alert.alert("No uploaded file path", "Please upload an image first.");
     return;
   }
 
-  // Extract the username part of the email, assuming the email is standard with one '@' character
-  const emailUsername = userEmail
-    .substring(0, userEmail.lastIndexOf("@"))
-    .replace(/[^a-zA-Z0-9]/g, "_");
-  const fileName = fileUri.split("/").pop();
-  const fileExtension = fileName ? fileName.split(".").pop() : "png"; // Default to 'png' if extension is not found
-  const mimeType = `image/${fileExtension}`;
-  const filePath = `${emailUsername}/${Date.now()}-${fileName}`;
-
   try {
-    const { data, error } = await supabase.storage
-      .from("FantasyStaffBucket")
-      .upload(
-        filePath,
-        {
-          uri: fileUri,
-          type: mimeType,
-          name: fileName,
-        },
-        { upsert: true }
-      );
-
-    if (error) throw new Error(error.message);
-
-    const imageUrl = supabase.storage
-      .from("FantasyStaffBucket")
-      .getPublicUrl(filePath).publicURL;
-    updateAirtableRecord(userEmail, imageUrl);
-    setSelectedImage(imageUrl); // Set the image URL to state
-  } catch (error) {
-    console.error("Error uploading image: ", error);
-    Alert.alert("Upload Error", error.message || "Failed to upload image.");
-  }
-};
-
-const updateAirtableRecord = async (email, imageUrl) => {
-  const recordToUpdate = records.find(
-    (record) => record.fields.Email === email
-  );
-  if (recordToUpdate) {
-    try {
-      const response = await fetch(
-        `https://api.airtable.com/v0/${AirtableBaseId}/Profiles/${recordToUpdate.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${AirtableApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            fields: {
-              Picture: imageUrl,
-                },
-            },
-          ),
-        }
-      );
-      const responseData = await response.json();
-      if (!response.ok) {
-        throw new Error(
-          responseData.error && responseData.error.message
-            ? responseData.error.message
-            : "Unknown error from Airtable"
-        );
-      }
-      Alert.alert(
-        "Record Updated",
-        "Profile picture updated successfully in Airtable."
-      );
-    } catch (error) {
-      console.error("Error updating record in Airtable:", error);
-      Alert.alert("Update Error", error.toString()); // Using error.toString() to capture the correct error message
+    const recordToUpdate = records.find(record => record.fields.Email === userEmail);
+    if (!recordToUpdate) {
+      Alert.alert("No Record Found", "No matching record found in Airtable for the current user.");
+      return;
     }
-  } else {
-    Alert.alert(
-      "No Record Found",
-      "No matching record found in Airtable for the current user."
+
+    const response = await fetch(
+      `https://api.airtable.com/v0/${AirtableBaseId}/Profiles/${recordToUpdate.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${AirtableApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fields: {
+            Picture: [
+              { url: uploadedFilePath }
+            ]
+          }
+        })
+      }
     );
+
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error(responseData.error && responseData.error.message ? responseData.error.message : "Unknown error from Airtable");
+    }
+
+    Alert.alert("Record Updated", "Profile picture updated successfully in Airtable.");
+  } catch (error) {
+    console.error("Error updating record in Airtable:", error);
+    Alert.alert("Update Error", error.toString());
   }
 };
-
-
 
 
   return (
@@ -252,6 +298,11 @@ const updateAirtableRecord = async (email, imageUrl) => {
       />
       <Button title="Sign Out" onPress={handleSignOut} />
       <Button title="Pick an image from camera roll" onPress={pickImage} />
+      {selectedImage && (
+        <>
+          <Button title="Submit Photo" onPress={submitPhoto} />
+        </>
+      )}
       {selectedImage && (
         <Image
           source={{ uri: selectedImage }}
