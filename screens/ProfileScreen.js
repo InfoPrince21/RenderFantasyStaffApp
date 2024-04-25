@@ -124,18 +124,22 @@ const submitPhoto = async () => {
     const emailUsername = userEmail
       .substring(0, userEmail.lastIndexOf("@"))
       .replace(/[^a-zA-Z0-9]/g, "_");
-    const fileName = selectedImage.split("/").pop();
+    const fileName = "profile_photo";
     const fileExtension = fileName.split(".").pop();
     const mimeType = `image/${fileExtension}`;
-    const filePath = `${emailUsername}/${Date.now()}-${fileName}`;
+    const filePath = `${emailUsername}/${fileName}`;
 
     const uploadResponse = await supabase.storage
       .from("FantasyStaffBucket")
-      .upload(filePath, {
-        uri: selectedImage,
-        type: mimeType,
-        name: fileName,
-      });
+      .upload(
+        filePath,
+        {
+          uri: selectedImage,
+          type: mimeType,
+          name: `${fileName}.${fileExtension}`,
+        },
+        { upsert: true }
+      ); // Ensure upsert is set to true to replace the file
 
     if (uploadResponse.error) {
       throw new Error(uploadResponse.error.message);
@@ -276,7 +280,7 @@ const updateAirtableRecord = async (email, uploadedFilePath) => {
               <Text>About Me: {record.fields.AboutMe}</Text>
               {record.fields.Picture && (
                 <Image
-                  source={{ uri: record.fields.Picture[0].url }}
+                  source={{ uri: record.fields.Picture }}
                   style={styles.image}
                 />
               )}

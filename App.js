@@ -10,7 +10,7 @@ import {
   Provider as PaperProvider,
   DefaultTheme as PaperDefaultTheme,
 } from "react-native-paper";
-import { store } from "./store/store.js";
+import { store } from "./redux/store.js";
 import { supabase } from "./supabaseClient";
 import {
   HomeScreen,
