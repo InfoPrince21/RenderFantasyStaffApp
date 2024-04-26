@@ -7,6 +7,8 @@ import { supabase } from "../supabaseClient";
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   const AIRTABLE_BASE_ID = "appmqv083cLppisF5"; // Replace with your Airtable Base ID
   const AIRTABLE_API_KEY =
@@ -27,7 +29,7 @@ const SignUpScreen = ({ navigation }) => {
       await postEmailToAirtable(email);
 
       console.log("User signed up", user);
-      navigation.navigate("ConfirmSignUp", { email: email });
+      navigation.navigate("ConfirmSignUp", { email: email, firstName, lastName });
     } catch (error) {
       console.error("Error signing up:", error.message);
       Alert.alert("Sign Up Failed", error.message);
@@ -41,6 +43,10 @@ const SignUpScreen = ({ navigation }) => {
         {
           fields: {
             Email: email,
+            FirstName: firstName,
+            LastName: lastName,
+            Picture:
+              "https://chatai.com/wp-content/uploads/2023/11/tr71123-ai-art.jpeg",
           },
         },
         {
@@ -67,6 +73,20 @@ const SignUpScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Image source={require("../assets/logo1.webp")} style={styles.logo} />
+      <TextInput
+        label="First Name"
+        mode="outlined"
+        value={firstName}
+        onChangeText={setFirstName}
+        style={styles.input}
+      />
+      <TextInput
+        label="Last Name"
+        mode="outlined"
+        value={lastName}
+        onChangeText={setLastName}
+        style={styles.input}
+      />
       <TextInput
         label="Email"
         mode="outlined"

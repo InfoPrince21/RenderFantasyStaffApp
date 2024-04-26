@@ -2,11 +2,11 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 export const fetchProfiles = createAsyncThunk(
   "profiles/fetchProfiles",
-  async (email, { getState }) => {
+  async ({ getState }) => {
     const state = getState();
     const { AirtableApiKey, AirtableBaseId } = state.config;
     const response = await fetch(
-      `https://api.airtable.com/v0/${AirtableBaseId}/Profiles?filterByFormula=Email="${email}"`,
+      `https://api.airtable.com/v0/${AirtableBaseId}/Profiles`,
       {
         headers: { Authorization: `Bearer ${AirtableApiKey}` },
       }

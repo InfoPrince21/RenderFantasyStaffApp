@@ -3,7 +3,7 @@ import { View, TextInput, Button, Text, StyleSheet, Alert } from "react-native";
 import { supabase } from "../supabaseClient";
 
 const ConfirmEmailScreen = ({ route, navigation }) => {
-  const { email } = route.params;
+  const { email, firstName, lastName } = route.params;
   const [code, setCode] = useState("");
 
   const confirmSignUp = async () => {
@@ -32,7 +32,14 @@ const ConfirmEmailScreen = ({ route, navigation }) => {
       if (!error) {
         const { data, error: insertError } = await supabase
           .from("users")
-          .insert([{ user_id: userId, email: email }]); // Use the random userId here
+          .insert([
+            {
+              user_id: userId,
+              email: email,
+              first_name: firstName,
+              last_name: lastName,
+            },
+          ]); // Use the random userId here
 
         if (insertError) {
           throw insertError;
