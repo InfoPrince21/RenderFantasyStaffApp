@@ -1,46 +1,64 @@
-import { createSlice } from "@reduxjs/toolkit";
-import fetchUsers from "./fetchUsers"; // Ensure this import is correct
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { supabase } from "../../supabaseClient"; // Ensure you have the correct path
 
+// Define the async thunk for fetching the authenticated user
+export const fetchAuthUser = createAsyncThunk(
+  "user/fetchAuthUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const user = supabase.auth.user();
+
+      if (!user) {
+        throw new Error("No authenticated user found.");
+      }
+
+      // Optionally fetch more detailed user info from your database if needed
+      return user;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Create the user slice with initial state, reducers, and extra reducers
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    users: [],
+    currentUser: null,
     loading: false,
     error: null,
   },
   reducers: {
     // Synchronous reducer to update a user's details
     updateUser(state, action) {
-      const index = state.users.findIndex(
-        (user) => user.id === action.payload.id
-      );
-      if (index !== -1) {
-        state.users[index] = { ...state.users[index], ...action.payload };
+      if (state.currentUser && state.currentUser.id === action.payload.id) {
+        state.currentUser = { ...state.currentUser, ...action.payload };
       }
+    },
+    // Reducer to clear the current user upon logout
+    clearCurrentUser(state) {
+      state.currentUser = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUsers.pending, (state) => {
+      .addCase(fetchAuthUser.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchUsers.fulfilled, (state, action) => {
-        state.users = action.payload;
+      .addCase(fetchAuthUser.fulfilled, (state, action) => {
+        state.currentUser = action.payload;
         state.loading = false;
         state.error = null;
       })
-      .addCase(fetchUsers.rejected, (state, action) => {
+      .addCase(fetchAuthUser.rejected, (state, action) => {
         state.error = action.payload;
         state.loading = false;
       });
   },
 });
 
-console.log("Slice creation:", userSlice);
-
-
-
 // Export the actions
-export const { updateUser } = userSlice.actions;
-// Correctly export the reducer
+export const { updateUser, clearCurrentUser } = userSlice.actions;
+
+// Export the reducer
 export default userSlice.reducer;
