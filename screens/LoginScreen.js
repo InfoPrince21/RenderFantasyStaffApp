@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, StyleSheet, Alert, Image } from "react-native";
-import { TextInput, Button } from "react-native-paper";
+import { Input, Button } from "@ui-kitten/components"; // Import UI Kitten components
 import { supabase } from "../supabaseClient";
 
 const LoginScreen = ({ navigation }) => {
@@ -25,39 +25,38 @@ const LoginScreen = ({ navigation }) => {
     }
   }
 
+
   return (
     <View style={styles.container}>
       <Image
         source={require("../assets/logo1.webp")} // Adjust path as necessary
         style={styles.logo}
       />
-      <TextInput
+      <Input
         label="Email"
-        mode="outlined"
         value={email}
         onChangeText={setEmail}
         style={styles.input}
       />
-      <TextInput
+      <Input
         label="Password"
-        mode="outlined"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
         style={styles.input}
       />
-      <Button mode="contained" onPress={signInWithEmail} style={styles.button}>
+      <Button onPress={signInWithEmail} style={styles.button}>
         Sign In
       </Button>
       <Button
-        mode="text"
+        appearance="ghost"
         onPress={() => navigation.navigate("ForgotPassword")}
         style={styles.textButton}
       >
         Forgot Password?
       </Button>
       <Button
-        mode="text"
+        appearance="ghost"
         onPress={() => navigation.navigate("SignUp")}
         style={styles.textButton}
       >
@@ -75,10 +74,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logo: {
-    width: 300, // Increased width
-    height: 300, // Increased height to maintain aspect ratio
+    width: 300,
+    height: 300,
     marginBottom: 20,
-    resizeMode: "contain", // Ensures the entire logo is visible and scales properly
+    resizeMode: "contain",
   },
   input: {
     width: "90%",

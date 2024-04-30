@@ -7,21 +7,26 @@ import {
   StyleSheet,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import  fetchUsers  from "../features/users/fetchUsers.js";
+import { fetchPlayers } from "../features/players/playersSlice";
+import { Card, Avatar } from "@ui-kitten/components";
 
 const PlayersScreen = () => {
   const dispatch = useDispatch();
-  const { users, loading, error } = useSelector((state) => state.user);
+  const { players, loading, error } = useSelector((state) => state.players);
 
   useEffect(() => {
-    dispatch(fetchUsers());
+    dispatch(fetchPlayers());
   }, [dispatch]);
 
   const renderItem = ({ item }) => (
-    <View style={styles.itemContainer}>
-      <Text style={styles.itemText}>{item.email}</Text>
-      {/* Displaying the user's email */}
-    </View>
+    <Card style={styles.card}>
+      <Avatar source={{ uri: item.fields.Picture }} style={styles.image} />
+      <Text>
+        {item.fields.FirstName} {item.fields.LastName}
+      </Text>
+      <Text>Email: {item.fields.Email}</Text>
+      <Text>About Me: {item.fields.AboutMe}</Text>
+    </Card>
   );
 
   if (loading) {
@@ -38,10 +43,8 @@ const PlayersScreen = () => {
 
   return (
     <FlatList
-      data={users}
-      keyExtractor={(item, index) =>
-        item.id ? item.id.toString() : index.toString()
-      }
+      data={players}
+      keyExtractor={(item) => item.id}
       renderItem={renderItem}
       contentContainerStyle={styles.listContainer}
     />
@@ -57,13 +60,15 @@ const styles = StyleSheet.create({
   listContainer: {
     padding: 20,
   },
-  itemContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#cccccc",
+  card: {
+    marginVertical: 8,
+    marginHorizontal: 16,
+    padding: 16,
   },
-  itemText: {
-    fontSize: 18,
+  image: {
+    width: 64,
+    height: 64,
+    marginRight: 16,
   },
 });
 

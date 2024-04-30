@@ -9,7 +9,7 @@ export { default as RedeemPointsScreen } from "./RedeemPointsScreen";
 export { default as ChatRoomScreen } from "./ChatRoomScreen";
 export { default as QuizMeScreen } from "./QuizMeScreen";
 export { default as StudyGuideScreen } from "./StudyGuideScreen";
-export { default as GameHistoryScreen } from "./GameHistoryScreen";
+export { default as DraftRoomScreen } from "./DraftRoomScreen";
 export { default as RecordsScreen } from "./RecordsScreen";
 export { default as LoginScreen } from "./LoginScreen";
 export { default as SignUpScreen } from "./SignUpScreen";

@@ -1,12 +1,16 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Provider as ReduxProvider } from "react-redux";
+import React, { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
-import { ApplicationProvider, IconRegistry } from "@ui-kitten/components";
+import { Provider as ReduxProvider, useDispatch } from "react-redux";
+import {
+  ApplicationProvider,
+  IconRegistry,
+  Layout,
+} from "@ui-kitten/components";
 import { EvaIconsPack } from "@ui-kitten/eva-icons";
 import * as eva from "@eva-design/eva";
-
+import { ThemeContextProvider } from "./theme-context"; // Import ThemeContextProvider
 import { store } from "./redux/store";
 import { supabase } from "./supabaseClient";
 import {
@@ -21,7 +25,7 @@ import {
   ChatRoomScreen,
   QuizMeScreen,
   StudyGuideScreen,
-  GameHistoryScreen,
+  DraftRoomScreen,
   RecordsScreen,
   ProfileScreen,
   LoginScreen,
@@ -36,11 +40,6 @@ import {
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
-
-const customTheme = {
-  ...eva.light,
-  // Define your colors based on the logo colors
-};
 
 function AuthNavigator() {
   return (
@@ -74,14 +73,14 @@ function DrawerNavigator() {
       <Drawer.Screen name="Teams" component={TeamsScreen} />
       <Drawer.Screen name="Players" component={PlayersScreen} />
       <Drawer.Screen name="Captains" component={CaptainsScreen} />
+      <Drawer.Screen name="DraftRoom" component={DraftRoomScreen} />
+      <Drawer.Screen name="ChatRoom" component={ChatRoomScreen} />
       <Drawer.Screen name="PlayerRankings" component={PlayerRankingsScreen} />
       <Drawer.Screen name="TeamRankings" component={TeamRankingsScreen} />
       <Drawer.Screen name="Awards" component={AwardsScreen} />
       <Drawer.Screen name="RedeemPoints" component={RedeemPointsScreen} />
-      <Drawer.Screen name="ChatRoom" component={ChatRoomScreen} />
       <Drawer.Screen name="QuizMe" component={QuizMeScreen} />
       <Drawer.Screen name="StudyGuide" component={StudyGuideScreen} />
-      <Drawer.Screen name="GameHistory" component={GameHistoryScreen} />
       <Drawer.Screen name="Records" component={RecordsScreen} />
       <Drawer.Screen name="Profile" component={ProfileNavigator} />
       {/* Add other screens for your drawer navigation here */}
@@ -92,11 +91,6 @@ function DrawerNavigator() {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const checkAuthState = useCallback(async () => {
-    const session = supabase.auth.session();
-    setIsAuthenticated(!!session);
-  }, []);
-
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -104,25 +98,21 @@ function App() {
       }
     );
 
-    checkAuthState();
-
-    return () => {
-      if (authListener) {
-        authListener.unsubscribe();
-      }
-    };
-  }, [checkAuthState]);
+    return () => authListener?.unsubscribe();
+  }, []);
 
   return (
     <>
       <IconRegistry icons={EvaIconsPack} />
-      <ApplicationProvider {...eva} theme={customTheme}>
-        <ReduxProvider store={store}>
-          <NavigationContainer>
-            {isAuthenticated ? <DrawerNavigator /> : <AuthNavigator />}
-          </NavigationContainer>
-        </ReduxProvider>
-      </ApplicationProvider>
+      <ThemeContextProvider>
+        <ApplicationProvider {...eva} theme={eva.light}>
+          <ReduxProvider store={store}>
+            <NavigationContainer>
+              {isAuthenticated ? <DrawerNavigator /> : <AuthNavigator />}
+            </NavigationContainer>
+          </ReduxProvider>
+        </ApplicationProvider>
+      </ThemeContextProvider>
     </>
   );
 }

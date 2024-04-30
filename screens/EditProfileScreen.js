@@ -6,12 +6,10 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { Button, Card, Input, Layout, Text } from "@ui-kitten/components";
+import { Button, Card, Input, Layout, Text, Icon } from "@ui-kitten/components";
 import * as ImagePicker from "expo-image-picker";
-import { Icon } from "@ui-kitten/components";
 import { supabase } from "../supabaseClient";
 import { AirtableApiKey, AirtableBaseId } from "../airtableconfig";
-
 
 const EditProfileScreen = ({ navigation }) => {
   const [userEmail, setUserEmail] = useState("");
@@ -65,6 +63,63 @@ const EditProfileScreen = ({ navigation }) => {
     }
   };
 
+const updateAirTablePicture = async (email, imageUrl) => {
+  setLoading(true);
+  try {
+    const recordToUpdate = records.find(
+      (record) => record.fields.Email === email
+    );
+    if (!recordToUpdate) {
+      Alert.alert(
+        "No Record Found",
+        "No matching record found in Airtable for the current user."
+      );
+      return;
+    }
+
+    const response = await fetch(
+      `https://api.airtable.com/v0/${AirtableBaseId}/Profiles/${recordToUpdate.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${AirtableApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fields: {
+            Picture: imageUrl,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error && errorData.error.message
+          ? errorData.error.message
+          : "Unknown error from Airtable"
+      );
+    }
+
+    Alert.alert("Success", "Picture updated successfully in Airtable.");
+    const updatedRecords = records.map((record) =>
+      record.id === recordToUpdate.id
+        ? {
+            ...record,
+            fields: { ...record.fields, Picture: [{ url: imageUrl }] },
+          }
+        : record
+    );
+    setRecords(updatedRecords);
+  } catch (error) {
+    console.error("Error updating picture in Airtable:", error);
+    Alert.alert("Update Error", error.message || "Failed to update picture.");
+  } finally {
+    setLoading(false);
+  }
+};
+
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -99,10 +154,10 @@ const EditProfileScreen = ({ navigation }) => {
       const emailUsername = userEmail
         .substring(0, userEmail.lastIndexOf("@"))
         .replace(/[^a-zA-Z0-9]/g, "_");
-      const fileName = "profile_photo";
-      const fileExtension = fileName.split(".").pop();
+      const fileName = `profile_photo_${Date.now()}`; // Added a timestamp to ensure unique file names
+      const fileExtension = "jpg"; // Assuming JPEG as the default format for images from image picker
       const mimeType = `image/${fileExtension}`;
-      const filePath = `${emailUsername}/${fileName}`;
+      const filePath = `${emailUsername}/${fileName}.${fileExtension}`;
 
       const uploadResponse = await supabase.storage
         .from("FantasyStaffBucket")
@@ -114,13 +169,12 @@ const EditProfileScreen = ({ navigation }) => {
             name: `${fileName}.${fileExtension}`,
           },
           { upsert: true }
-        ); // Ensure upsert is set to true to replace the file
+        );
 
       if (uploadResponse.error) {
         throw new Error(uploadResponse.error.message);
       }
 
-      // Attempt to retrieve public URL
       const { publicURL, error: urlError } = supabase.storage
         .from("FantasyStaffBucket")
         .getPublicUrl(filePath);
@@ -129,6 +183,7 @@ const EditProfileScreen = ({ navigation }) => {
         throw new Error(urlError.message);
       }
 
+      // Construct URL either from publicURL or build it manually if not available
       const constructedUrl =
         publicURL ||
         `https://mquxomutiwqvihuvdsgd.supabase.co/storage/v1/object/public/FantasyStaffBucket/${filePath}`;
@@ -136,78 +191,12 @@ const EditProfileScreen = ({ navigation }) => {
       setUploadedFilePath(constructedUrl);
       Alert.alert("Upload Successful", "Your photo was uploaded successfully.");
       console.log("Public URL:", constructedUrl); // Logging the URL for debugging purposes
-      await updateAirtableRecord(userEmail, aboutMe, constructedUrl);
-      // Close the image picker screen and clear selected image
       setSelectedImage(null);
       setIsSaveButtonVisible(false);
+      updateAirTablePicture(userEmail, constructedUrl);
     } catch (error) {
       console.error("Upload Error:", error.message);
       Alert.alert("Upload Error", error.message || "Failed to upload image.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateAirtableRecord = async (email, aboutMe, imageUrl) => {
-    setLoading(true);
-    try {
-      const recordToUpdate = records.find(
-        (record) => record.fields.Email === email
-      );
-      if (!recordToUpdate) {
-        Alert.alert(
-          "No Record Found",
-          "No matching record found in Airtable for the current user."
-        );
-        return;
-      }
-      
-      const response = await fetch(
-        `https://api.airtable.com/v0/${AirtableBaseId}/Profiles/${recordToUpdate.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${AirtableApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            fields: {
-              AboutMe: aboutMe,
-              Picture: imageUrl,
-            },
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error && errorData.error.message
-            ? errorData.error.message
-            : "Unknown error from Airtable"
-        );
-      }
-
-      const updatedData = await response.json();
-      Alert.alert("Success", "Record updated successfully.");
-
-      // Optionally update local records to reflect the change
-      const updatedRecords = records.map((record) =>
-        record.id === recordToUpdate.id
-          ? {
-              ...record,
-              fields: {
-                ...record.fields,
-                AboutMe: aboutMe,
-                Picture: [{ url: imageUrl }],
-              },
-            }
-          : record
-      );
-      setRecords(updatedRecords);
-    } catch (error) {
-      console.error("Error updating record in Airtable:", error);
-      Alert.alert("Update Error", error.message || "Failed to update record.");
     } finally {
       setLoading(false);
     }
@@ -296,7 +285,10 @@ const EditProfileScreen = ({ navigation }) => {
       setRecords(updatedRecords);
     } catch (error) {
       console.error("Error updating About Me in Airtable:", error);
-      Alert.alert("Update Error", error.toString());
+      Alert.alert(
+        "Update Error",
+        error.message || "Failed to update About Me."
+      );
     } finally {
       setLoading(false);
     }
@@ -310,10 +302,6 @@ const EditProfileScreen = ({ navigation }) => {
         ) : (
           records.map((record) => (
             <Card style={styles.record} key={record.id}>
-              <Button onPress={pickImage}>Change Photo</Button>
-              {isSaveButtonVisible && (
-                <Button onPress={savePhoto}>Save Photo</Button>
-              )}
               <Text category="h6">
                 Name: {record.fields.FirstName} {record.fields.LastName}
               </Text>
@@ -353,6 +341,12 @@ const EditProfileScreen = ({ navigation }) => {
             </Card>
           ))
         )}
+        <Card>
+          <Button onPress={pickImage}>Change Photo</Button>
+          {isSaveButtonVisible && (
+            <Button onPress={savePhoto}>Save Photo</Button>
+          )}
+        </Card>
       </ScrollView>
     </Layout>
   );
@@ -365,10 +359,6 @@ const styles = StyleSheet.create({
   },
   record: {
     marginBottom: 15,
-  },
-  info: {
-    fontSize: 18,
-    marginVertical: 10,
   },
 });
 

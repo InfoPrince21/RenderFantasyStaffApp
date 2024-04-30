@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, Text, StyleSheet, Alert } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
+import { Button, Input, Text, Layout } from "@ui-kitten/components";
 import { supabase } from "../supabaseClient";
 
 const ConfirmEmailScreen = ({ route, navigation }) => {
@@ -15,9 +16,6 @@ const ConfirmEmailScreen = ({ route, navigation }) => {
       return;
     }
 
-    // Generate a random user_id
-    const userId = Math.floor(Math.random() * 1000000);
-
     try {
       const { user, error } = await supabase.auth.verifyOtp({
         token: code,
@@ -29,34 +27,8 @@ const ConfirmEmailScreen = ({ route, navigation }) => {
         throw error;
       }
 
-      if (!error) {
-        const { data, error: insertError } = await supabase
-          .from("users")
-          .insert([
-            {
-              user_id: userId,
-              email: email,
-              first_name: firstName,
-              last_name: lastName,
-            },
-          ]); // Use the random userId here
-
-        if (insertError) {
-          throw insertError;
-        }
-
-        Alert.alert(
-          "Success",
-          "Email verified! User information added to the database. You are now logged in."
-        );
-        // Uncomment and modify the navigation line below as needed
-        // navigation.navigate("HomeScreen");
-      } else {
-        Alert.alert(
-          "Verification Pending",
-          "Please verify your email to complete registration."
-        );
-      }
+      Alert.alert("Success", "Email verified! You are now logged in.");
+      navigation.navigate("HomeScreen"); // Or any appropriate screen
     } catch (error) {
       Alert.alert("Error", error.message);
     }
@@ -77,30 +49,36 @@ const ConfirmEmailScreen = ({ route, navigation }) => {
     }
   };
 
-  const goToLogin = () => {
-    navigation.navigate("LoginScreen");
-  };
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Confirm Your Email</Text>
-      <TextInput
+    <Layout style={styles.container}>
+      <Text category="h1" style={styles.title}>
+        Confirm Your Email
+      </Text>
+      <Input
         style={styles.input}
         placeholder="Enter your verification code"
         value={code}
         onChangeText={setCode}
         keyboardType="numeric"
-        autoCapitalize="none"
-        autoCorrect={false}
       />
-      <Button title="Verify Email" onPress={confirmSignUp} />
+      <Button style={styles.button} onPress={confirmSignUp}>
+        Verify Email
+      </Button>
       <Button
-        title="Resend Code"
+        style={styles.button}
         onPress={resendConfirmationCode}
-        color="#20B2AA"
-      />
-      <Button title="Go to Login" onPress={goToLogin} color="#1E90FF" />
-    </View>
+        appearance="outline"
+      >
+        Resend Code
+      </Button>
+      <Button
+        style={styles.button}
+        onPress={() => navigation.navigate("LoginScreen")}
+        appearance="ghost"
+      >
+        Go to Login
+      </Button>
+    </Layout>
   );
 };
 
@@ -110,17 +88,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    backgroundColor: "#fff", // Background color of the screen
   },
   title: {
-    fontSize: 20,
-    marginBottom: 15,
+    marginBottom: 20,
   },
   input: {
     width: "80%",
-    height: 40,
     marginVertical: 10,
-    borderWidth: 1,
-    padding: 10,
+  },
+  button: {
+    marginTop: 10,
+    width: "80%",
   },
 });
 

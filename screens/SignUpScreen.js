@@ -7,6 +7,7 @@ import { supabase } from "../supabaseClient";
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState(""); // State for confirm password
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
@@ -16,6 +17,11 @@ const SignUpScreen = ({ navigation }) => {
   const AIRTABLE_TABLE_NAME = "Profiles"; // The name of the table where data will be stored
 
   async function handleSignUp() {
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match.");
+      return;
+    }
+
     try {
       // Supabase sign-up
       const { user, error } = await supabase.auth.signUp({
@@ -29,7 +35,11 @@ const SignUpScreen = ({ navigation }) => {
       await postEmailToAirtable(email);
 
       console.log("User signed up", user);
-      navigation.navigate("ConfirmSignUp", { email: email, firstName, lastName });
+      navigation.navigate("ConfirmSignUp", {
+        email: email,
+        firstName,
+        lastName,
+      });
     } catch (error) {
       console.error("Error signing up:", error.message);
       Alert.alert("Sign Up Failed", error.message);
@@ -100,6 +110,14 @@ const SignUpScreen = ({ navigation }) => {
         mode="outlined"
         value={password}
         onChangeText={setPassword}
+        secureTextEntry
+        style={styles.input}
+      />
+      <TextInput
+        label="Confirm Password"
+        mode="outlined"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
         secureTextEntry
         style={styles.input}
       />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   StyleSheet,
   ScrollView,
@@ -6,11 +6,21 @@ import {
   Alert,
   View,
 } from "react-native";
-import { Layout, Text, Card, Avatar, Button } from "@ui-kitten/components";
+import {
+  Layout,
+  Text,
+  Card,
+  Avatar,
+  Button,
+  useTheme,
+} from "@ui-kitten/components";
+import { ThemeContext } from "../theme-context"; // Ensure this is correctly set up and exported
 import { supabase } from "../supabaseClient";
 import { AirtableApiKey, AirtableBaseId } from "../airtableconfig";
 
 const ProfileScreen = ({ navigation }) => {
+  const themeContext = useContext(ThemeContext);
+  const theme = useTheme(); // Fetch current theme styles
   const [userEmail, setUserEmail] = useState("");
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -70,11 +80,6 @@ const ProfileScreen = ({ navigation }) => {
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) {
-      Alert.alert("Sign Out Error", error.message);
-    } else {
-      navigation.replace("Login"); // Use replace to avoid going back to profile after sign out
-    }
   };
 
   const handleRefresh = () => {
@@ -83,9 +88,14 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   return (
-    <Layout style={styles.container}>
+    <Layout
+      style={[
+        styles.container,
+        { backgroundColor: theme["background-basic-color-1"] },
+      ]}
+    >
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme["text-basic-color"]} />
       ) : (
         <ScrollView>
           {records.map((record) => (
@@ -94,18 +104,16 @@ const ProfileScreen = ({ navigation }) => {
                 source={{ uri: record.fields.Picture }}
                 style={styles.image}
               />
-              <Text category="h6">
+              <Text category="h6" style={{ color: theme["text-basic-color"] }}>
                 {record.fields.FirstName} {record.fields.LastName}
               </Text>
-              <Text>Email: {record.fields.Email}</Text>
-              <Text>About Me: {record.fields.AboutMe}</Text>
-              <Button
-                onPress={() =>
-                  navigation.navigate("EditProfile", {
-                    onUpdate: handleRefresh,
-                  })
-                }
-              >
+              <Text style={{ color: theme["text-basic-color"] }}>
+                Email: {record.fields.Email}
+              </Text>
+              <Text style={{ color: theme["text-basic-color"] }}>
+                About Me: {record.fields.AboutMe}
+              </Text>
+              <Button onPress={() => navigation.navigate("EditProfile")}>
                 Edit Profile
               </Button>
             </Card>
