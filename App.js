@@ -58,7 +58,7 @@ function AuthNavigator() {
 
 function ProfileNavigator() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MyProfile" component={ProfileScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       {/* Add other screens related to profile here */}

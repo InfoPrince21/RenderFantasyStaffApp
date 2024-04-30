@@ -5,6 +5,7 @@ import {
   View,
   ActivityIndicator,
   Alert,
+  Platform,
 } from "react-native";
 import { Button, Card, Input, Layout, Text, Icon } from "@ui-kitten/components";
 import * as ImagePicker from "expo-image-picker";
@@ -43,7 +44,7 @@ const EditProfileScreen = ({ navigation }) => {
       }
     })();
 
-    return () => authListener.unsubscribe();
+    // return () => authListener.unsubscribe();
   }, []);
 
   const fetchRecords = async (email) => {
@@ -121,25 +122,43 @@ const updateAirTablePicture = async (email, imageUrl) => {
 };
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (result.cancelled) {
-      console.log("User cancelled image selection.");
-    } else if (result.errorCode) {
-      console.error("ImagePicker Error: ", result.errorMessage);
-      Alert.alert("Image Picker Error", result.errorMessage);
-    } else if (result.assets && result.assets.length > 0) {
-      const selectedAsset = result.assets[0];
-      setSelectedImage(selectedAsset.uri);
-      setIsSaveButtonVisible(true);
+    if (Platform.OS === "web") {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setSelectedImage(reader.result);
+            setIsSaveButtonVisible(true);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
     } else {
-      console.log("No assets found in result.");
-      Alert.alert("Error", "No image found.");
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (result.cancelled) {
+        console.log("User cancelled image selection.");
+      } else if (result.errorCode) {
+        console.error("ImagePicker Error: ", result.errorMessage);
+        Alert.alert("Image Picker Error", result.errorMessage);
+      } else if (result.assets && result.assets.length > 0) {
+        const selectedAsset = result.assets[0];
+        setSelectedImage(selectedAsset.uri);
+        setIsSaveButtonVisible(true);
+      } else {
+        console.log("No assets found in result.");
+        Alert.alert("Error", "No image found.");
+      }
     }
   };
 
@@ -159,20 +178,37 @@ const updateAirTablePicture = async (email, imageUrl) => {
       const mimeType = `image/${fileExtension}`;
       const filePath = `${emailUsername}/${fileName}.${fileExtension}`;
 
-      const uploadResponse = await supabase.storage
-        .from("FantasyStaffBucket")
-        .upload(
-          filePath,
-          {
-            uri: selectedImage,
-            type: mimeType,
-            name: `${fileName}.${fileExtension}`,
-          },
-          { upsert: true }
+      if (Platform.OS === "web") {
+        // For web version, convert selectedImage to a Blob object
+        const blob = await fetch(selectedImage).then((response) =>
+          response.blob()
         );
 
-      if (uploadResponse.error) {
-        throw new Error(uploadResponse.error.message);
+        // Upload the Blob object to Supabase Storage
+        const uploadResponse = await supabase.storage
+          .from("FantasyStaffBucket")
+          .upload(filePath, blob, { upsert: true });
+
+        if (uploadResponse.error) {
+          throw new Error(uploadResponse.error.message);
+        }
+      } else {
+        // For non-web platforms, use the original method
+        const uploadResponse = await supabase.storage
+          .from("FantasyStaffBucket")
+          .upload(
+            filePath,
+            {
+              uri: selectedImage,
+              type: mimeType,
+              name: `${fileName}.${fileExtension}`,
+            },
+            { upsert: true }
+          );
+
+        if (uploadResponse.error) {
+          throw new Error(uploadResponse.error.message);
+        }
       }
 
       const { publicURL, error: urlError } = supabase.storage
@@ -201,6 +237,7 @@ const updateAirTablePicture = async (email, imageUrl) => {
       setLoading(false);
     }
   };
+
 
 
   const handleUpdatePassword = async () => {
@@ -302,6 +339,13 @@ const updateAirTablePicture = async (email, imageUrl) => {
         ) : (
           records.map((record) => (
             <Card style={styles.record} key={record.id}>
+              <Button
+                appearance="ghost"
+                onPress={() => navigation.navigate("MyProfile")}
+                style={styles.backButton}
+              >
+                Back to Profile
+              </Button>
               <Text category="h6">
                 Name: {record.fields.FirstName} {record.fields.LastName}
               </Text>

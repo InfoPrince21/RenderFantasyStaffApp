@@ -37,7 +37,7 @@ const ProfileScreen = ({ navigation }) => {
             fetchRecords(session.user.email);
           } else {
             setUserEmail("");
-            navigation.navigate("Login");
+            // navigation.navigate("Login");
           }
         });
 
@@ -50,12 +50,12 @@ const ProfileScreen = ({ navigation }) => {
     if (error) {
       console.error("Failed to set up auth listener:", error.message);
     }
-
-    return () => {
-      if (authListener && authListener.unsubscribe) {
-        authListener.unsubscribe();
-      }
-    };
+    
+    // return () => {
+    //   if (authListener) {
+    //     authListener.data.unsubscribe();
+    //   }
+    // };
   }, []);
 
   const fetchRecords = async (email) => {
@@ -78,9 +78,17 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-  };
+const handleSignOut = async () => {
+  try {
+    await supabase.auth.signOut();
+    setUserEmail(""); // Reset userEmail state on sign-out
+    navigation.navigate("Home");
+  } catch (error) {
+    console.error("Error signing out:", error.message);
+    Alert.alert("Sign Out Failed", error.message || "Failed to sign out.");
+  }
+};
+
 
   const handleRefresh = () => {
     setLoading(true);
