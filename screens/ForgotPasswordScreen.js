@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Image, Alert } from "react-native";
-import { TextInput, Button, Snackbar } from "react-native-paper";
+import { Layout, Input, Button, Text } from "@ui-kitten/components";
+import { Image, StyleSheet } from "react-native";
 import { supabase } from "../supabaseClient";
 
 const ForgotPasswordScreen = ({ navigation }) => {
@@ -37,33 +37,31 @@ const ForgotPasswordScreen = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <Layout style={styles.container}>
       <Image source={require("../assets/logo1.webp")} style={styles.logo} />
-      <TextInput
+
+      <Input
         label="Email"
-        mode="outlined"
         value={email}
         onChangeText={setEmail}
-        keyboardType="email-address"
-        style={styles.input}
+        autoCompleteType="email"
         accessibilityLabel="Enter your email address"
       />
+
       <Button
-        mode="contained"
         onPress={handleResetPassword}
         style={styles.button}
         accessibilityLabel="Reset your password"
       >
         Reset Password
       </Button>
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
-      >
-        {snackbarMessage}
-      </Snackbar>
-    </View>
+
+      {snackbarVisible && (
+        <Text category="label" status="danger">
+          {snackbarMessage}
+        </Text>
+      )}
+    </Layout>
   );
 };
 
@@ -78,14 +76,12 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     marginBottom: 20,
-    resizeMode: "contain",
   },
   input: {
-    width: "100%",
     marginBottom: 20,
   },
   button: {
-    width: "100%",
+    marginTop: 20,
   },
 });
 

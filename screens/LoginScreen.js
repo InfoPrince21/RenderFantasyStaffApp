@@ -17,7 +17,7 @@ const LoginScreen = ({ navigation }) => {
       console.error("Error signing in:", error.message);
       Alert.alert("Sign In Failed", error.message);
       return;
-    }
+    } 
 
     if (data) {
       console.log("User signed in successfully:", data);

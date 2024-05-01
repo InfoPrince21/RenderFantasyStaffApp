@@ -16,8 +16,6 @@ export { default as SignUpScreen } from "./SignUpScreen";
 export { default as ForgotPasswordScreen } from "./ForgotPasswordScreen";
 export { default as ConfirmSignUpScreen } from "./ConfirmSignUpScreen";
 export { default as ProfileScreen } from "./ProfileScreen";
-export { default as NextStepScreen } from "./NextStepScreen";
-export { default as SetupProfileScreen } from "./SetupProfileScreen";
 export { default as ResetPasswordScreen } from "./ResetPasswordScreen";
 export { default as EditProfileScreen } from "./EditProfileScreen";
 

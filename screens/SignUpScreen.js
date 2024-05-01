@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Alert, Image } from "react-native";
-import { TextInput, Button } from "react-native-paper";
+import { ScrollView, StyleSheet, Alert, Image } from "react-native";
 import axios from "axios"; // Import Axios for HTTP requests
+import { Button, Input, Layout, Text } from "@ui-kitten/components";
 import { supabase } from "../supabaseClient";
-
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -81,50 +80,47 @@ const SignUpScreen = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <Image source={require("../assets/logo1.webp")} style={styles.logo} />
-      <TextInput
-        label="First Name"
-        mode="outlined"
-        value={firstName}
-        onChangeText={setFirstName}
-        style={styles.input}
-      />
-      <TextInput
-        label="Last Name"
-        mode="outlined"
-        value={lastName}
-        onChangeText={setLastName}
-        style={styles.input}
-      />
-      <TextInput
-        label="Email"
-        mode="outlined"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        style={styles.input}
-      />
-      <TextInput
-        label="Password"
-        mode="outlined"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
-      <TextInput
-        label="Confirm Password"
-        mode="outlined"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-        style={styles.input}
-      />
-      <Button mode="contained" onPress={handleSignUp} style={styles.button}>
-        Sign Up
-      </Button>
-    </View>
+    <ScrollView>
+      <Layout style={styles.container}>
+        <Image source={require("../assets/logo1.webp")} style={styles.logo} />
+        <Input
+          label="First Name"
+          value={firstName}
+          onChangeText={setFirstName}
+          style={styles.input}
+        />
+        <Input
+          label="Last Name"
+          value={lastName}
+          onChangeText={setLastName}
+          style={styles.input}
+        />
+        <Input
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          style={styles.input}
+        />
+        <Input
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+        <Input
+          label="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+        <Button style={styles.button} onPress={handleSignUp}>
+          Sign Up
+        </Button>
+      </Layout>
+    </ScrollView>
   );
 };
 
