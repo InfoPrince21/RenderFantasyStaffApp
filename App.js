@@ -14,7 +14,9 @@ import { mapping, light as lightTheme } from "@eva-design/eva";
 import { ThemeContextProvider } from "./theme-context"; // Import ThemeContextProvider
 import { store } from "./redux/store";
 import { supabase } from "./supabaseClient";
-import { Ionicons } from "@expo/vector-icons";
+import * as Platform from "react-native";
+import { Ionicons as IoniconsNative } from "@expo/vector-icons";
+import { Ionicons as IoniconsWeb } from "react-native-vector-icons/Ionicons";
 import {
   HomeScreen,
   TeamsScreen,
@@ -41,33 +43,44 @@ import {
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
-const MyTheme = {
+let Ionicons = IoniconsNative; // Assign the default (native) icon set to Ionicons
+
+// Conditional assignment for web platform
+if (Platform.OS === "web") {
+  Ionicons = IoniconsWeb;
+}
+
+const MyDrawerTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: "#136C6F", // Primary color for your app used in various elements
-    background: "#0B4345", // Background color for various components
-    card: "#136C6F", // Background color of card-like elements
-    text: "#FFFFFF", // Text color that contrasts with the card and primary color
-    border: "#A7E5E3", // Color for borders, outlines, or dividers
-    notification: "#25BEB9", // Color for notifications, usually a brighter color to draw attention
+    primary: "#003366",
+    background: "#ffffff",
+    card: "#ffffff",
+    text: "#001A40",
+    border: "#ffffff",
+    notification: "#25BEB9",
+
+    // Further adjustment for clarity and visibility
+    activeTintColor: "#FFFFFF", // Bright yellow for selected item text, ensuring high visibility
+    activeBackgroundColor: "#136C6F", // Deep teal for the background of the selected item
+    inactiveTintColor: "#A7E5E3", // Light teal for text of non-selected items
+    inactiveBackgroundColor: "#003366", // Navy blue for background of non-selected items
   },
 };
 
-const customTheme = {
+const customLightTheme = {
   ...lightTheme,
-  "color-primary-100": "#D3F2F1", // Very light teal for background elements
-  "color-primary-200": "#A7E5E3", // Light teal for low emphasis areas
-  "color-primary-300": "#7BD8D5", // Medium teal for informational elements
-  "color-primary-400": "#50CBC7", // Rich teal for interactive or highlighted components
-  "color-primary-500": "#136C6F", // Deep teal for primary action items
-  "color-primary-600": "#1C9594", // Darkened teal for active states and focus elements
-  "color-primary-700": "#136C6F", // Deep dark teal for text and critical icons
-  "color-primary-800": "#0B4345", // Very dark teal for headers and emphasized text
-  "color-primary-900": "#042B2D", // Nearly black teal for footer and dense text areas
+  "color-primary-100": "#CCD6E4", // Very light blue, for background elements
+  "color-primary-200": "#99ADC9", // Lighter blue, for low emphasis areas
+  "color-primary-300": "#6684AE", // Medium blue, for informational elements
+  "color-primary-400": "#336B93", // Rich blue, for interactive or highlighted components
+  "color-primary-500": "#003366", // Navy blue for primary action items
+  "color-primary-600": "#2A9DF4", // Cerulean Blue for active states and focus elements
+  "color-primary-700": "#00224D", // Deeper navy blue for text and critical icons
+  "color-primary-800": "#001A40", // Very dark navy for headers and emphasized text
+  "color-primary-900": "#001334", // Nearly black navy for footer and dense text areas
 };
-
-
 
 function AuthNavigator() {
   return (
@@ -82,6 +95,15 @@ function AuthNavigator() {
 }
 
 function ProfileNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MyProfile" component={ProfileScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function HomeNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MyProfile" component={ProfileScreen} />
@@ -279,7 +301,6 @@ function DrawerNavigator() {
   );
 }
 
-
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -297,9 +318,9 @@ function App() {
     <>
       <IconRegistry icons={EvaIconsPack} />
       <ThemeContextProvider>
-        <ApplicationProvider {...eva} theme={customTheme}>
+        <ApplicationProvider {...eva} theme={customLightTheme}>
           <ReduxProvider store={store}>
-            <NavigationContainer>
+            <NavigationContainer theme={MyDrawerTheme}>
               {isAuthenticated ? <DrawerNavigator /> : <AuthNavigator />}
             </NavigationContainer>
           </ReduxProvider>

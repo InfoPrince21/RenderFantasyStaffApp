@@ -128,14 +128,12 @@ const handleSignOut = async () => {
           ))}
           <View style={styles.buttonContainer}>
             <Button
-              style={[styles.button, styles.refreshButton]}
               onPress={handleRefresh}
               size="small"
             >
               Refresh
             </Button>
             <Button
-              style={[styles.button, styles.signOutButton]}
               onPress={handleSignOut}
               size="small"
             >
