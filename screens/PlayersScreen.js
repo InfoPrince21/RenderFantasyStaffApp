@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,17 +6,11 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
-import { useSelector, useDispatch } from "react-redux";
-import { fetchPlayers } from "../features/players/playersSlice";
+import { useSelector } from "react-redux";
 import { Card, Avatar } from "@ui-kitten/components";
 
 const PlayersScreen = () => {
-  const dispatch = useDispatch();
-  const { players, loading, error } = useSelector((state) => state.players);
-
-  useEffect(() => {
-    dispatch(fetchPlayers());
-  }, [dispatch]);
+  const { players } = useSelector((state) => state.players);
 
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
@@ -28,18 +22,6 @@ const PlayersScreen = () => {
       <Text>About Me: {item.fields.AboutMe}</Text>
     </Card>
   );
-
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
-  }
-
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <Text>Error: {error}</Text>
-      </View>
-    );
-  }
 
   return (
     <FlatList

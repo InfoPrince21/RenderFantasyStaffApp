@@ -50,7 +50,7 @@ const ProfileScreen = ({ navigation }) => {
     if (error) {
       console.error("Failed to set up auth listener:", error.message);
     }
-    
+
     // return () => {
     //   if (authListener) {
     //     authListener.data.unsubscribe();
@@ -78,17 +78,16 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-const handleSignOut = async () => {
-  try {
-    await supabase.auth.signOut();
-    setUserEmail(""); // Reset userEmail state on sign-out
-    navigation.navigate("Home");
-  } catch (error) {
-    console.error("Error signing out:", error.message);
-    Alert.alert("Sign Out Failed", error.message || "Failed to sign out.");
-  }
-};
-
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUserEmail(""); // Reset userEmail state on sign-out
+      navigation.navigate("Home");
+    } catch (error) {
+      console.error("Error signing out:", error.message);
+      Alert.alert("Sign Out Failed", error.message || "Failed to sign out.");
+    }
+  };
 
   const handleRefresh = () => {
     setLoading(true);
@@ -127,16 +126,10 @@ const handleSignOut = async () => {
             </Card>
           ))}
           <View style={styles.buttonContainer}>
-            <Button
-              onPress={handleRefresh}
-              size="small"
-            >
+            <Button onPress={handleRefresh} size="small">
               Refresh
             </Button>
-            <Button
-              onPress={handleSignOut}
-              size="small"
-            >
+            <Button onPress={handleSignOut} size="small">
               Sign Out
             </Button>
           </View>

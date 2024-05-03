@@ -1,35 +1,14 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
-  View,
   Text,
   FlatList,
-  ActivityIndicator,
   StyleSheet,
 } from "react-native";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Card, Avatar } from "@ui-kitten/components";
-import { fetchTeams } from "../features/teams/teamsSlice";
 
 const TeamsScreen = () => {
-  const dispatch = useDispatch();
-  const { teams, loading, error } = useSelector((state) => state.teams);
-
-  useEffect(() => {
-    dispatch(fetchTeams());
-  }, [dispatch]);
-
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
-  }
-
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <Text>Error: {error}</Text>
-      </View>
-    );
-  }
-
+  const { teams } = useSelector((state) => state.teams);
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
       <Avatar source={{ uri: item.fields.Logo }} style={styles.avatar} />

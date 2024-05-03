@@ -7,7 +7,7 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import { Button, Card, Input, Layout, Text, Icon } from "@ui-kitten/components";
+import { Button, Card, Input, Layout, Text, Icon} from "@ui-kitten/components";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../supabaseClient";
 import { AirtableApiKey, AirtableBaseId } from "../airtableconfig";
@@ -64,62 +64,62 @@ const EditProfileScreen = ({ navigation }) => {
     }
   };
 
-const updateAirTablePicture = async (email, imageUrl) => {
-  setLoading(true);
-  try {
-    const recordToUpdate = records.find(
-      (record) => record.fields.Email === email
-    );
-    if (!recordToUpdate) {
-      Alert.alert(
-        "No Record Found",
-        "No matching record found in Airtable for the current user."
+  const updateAirTablePicture = async (email, imageUrl) => {
+    setLoading(true);
+    try {
+      const recordToUpdate = records.find(
+        (record) => record.fields.Email === email
       );
-      return;
-    }
-
-    const response = await fetch(
-      `https://api.airtable.com/v0/${AirtableBaseId}/Profiles/${recordToUpdate.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${AirtableApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fields: {
-            Picture: imageUrl,
-          },
-        }),
+      if (!recordToUpdate) {
+        Alert.alert(
+          "No Record Found",
+          "No matching record found in Airtable for the current user."
+        );
+        return;
       }
-    );
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData.error && errorData.error.message
-          ? errorData.error.message
-          : "Unknown error from Airtable"
+      const response = await fetch(
+        `https://api.airtable.com/v0/${AirtableBaseId}/Profiles/${recordToUpdate.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${AirtableApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fields: {
+              Picture: imageUrl,
+            },
+          }),
+        }
       );
-    }
 
-    Alert.alert("Success", "Picture updated successfully in Airtable.");
-    const updatedRecords = records.map((record) =>
-      record.id === recordToUpdate.id
-        ? {
-            ...record,
-            fields: { ...record.fields, Picture: [{ url: imageUrl }] },
-          }
-        : record
-    );
-    setRecords(updatedRecords);
-  } catch (error) {
-    console.error("Error updating picture in Airtable:", error);
-    Alert.alert("Update Error", error.message || "Failed to update picture.");
-  } finally {
-    setLoading(false);
-  }
-};
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error && errorData.error.message
+            ? errorData.error.message
+            : "Unknown error from Airtable"
+        );
+      }
+
+      Alert.alert("Success", "Picture updated successfully in Airtable.");
+      const updatedRecords = records.map((record) =>
+        record.id === recordToUpdate.id
+          ? {
+              ...record,
+              fields: { ...record.fields, Picture: [{ url: imageUrl }] },
+            }
+          : record
+      );
+      setRecords(updatedRecords);
+    } catch (error) {
+      console.error("Error updating picture in Airtable:", error);
+      Alert.alert("Update Error", error.message || "Failed to update picture.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const pickImage = async () => {
     if (Platform.OS === "web") {
@@ -238,8 +238,6 @@ const updateAirTablePicture = async (email, imageUrl) => {
     }
   };
 
-
-
   const handleUpdatePassword = async () => {
     if (newPassword.length < 8) {
       Alert.alert("Error", "Password must be at least 8 characters long.");
@@ -355,9 +353,6 @@ const updateAirTablePicture = async (email, imageUrl) => {
                 value={newPassword}
                 label="New Password"
                 placeholder="Enter new password"
-                accessoryRight={(props) => (
-                  <Icon {...props} name="lock-outline" />
-                )}
                 secureTextEntry={true}
                 onChangeText={setNewPassword}
               />
@@ -365,9 +360,6 @@ const updateAirTablePicture = async (email, imageUrl) => {
                 value={confirmPassword}
                 label="Confirm Password"
                 placeholder="Confirm new password"
-                accessoryRight={(props) => (
-                  <Icon {...props} name="lock-outline" />
-                )}
                 secureTextEntry={true}
                 onChangeText={setConfirmPassword}
               />
@@ -376,9 +368,6 @@ const updateAirTablePicture = async (email, imageUrl) => {
                 value={aboutMe}
                 label="About Me"
                 placeholder="Edit About Me"
-                accessoryRight={(props) => (
-                  <Icon {...props} name="person-outline" />
-                )}
                 onChangeText={setAboutMe}
               />
               <Button onPress={handleUpdateAboutMe}>Update About Me</Button>
@@ -395,7 +384,6 @@ const updateAirTablePicture = async (email, imageUrl) => {
     </Layout>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
