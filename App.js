@@ -92,7 +92,7 @@ function AuthNavigator() {
   );
 }
 
-function ProfileNavigator({ userEmail }) {
+function ProfileNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MyProfile" component={ProfileScreen} />
@@ -110,7 +110,7 @@ function HomeNavigator() {
   );
 }
 
-function DrawerNavigator({ userEmail }) {
+function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="Home">
       <Drawer.Screen
@@ -324,7 +324,7 @@ function App() {
           <ApplicationProvider {...eva} theme={customLightTheme}>
             <NavigationContainer theme={MyDrawerTheme}>
               {isAuthenticated ? (
-                <DrawerNavigator userEmail={userEmail} />
+                <DrawerNavigator/>
               ) : (
                 <AuthNavigator />
               )}
