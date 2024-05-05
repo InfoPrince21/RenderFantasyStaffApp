@@ -10,8 +10,7 @@ import { light as lightTheme } from "@eva-design/eva";
 import { ThemeContextProvider } from "./theme-context";
 import { supabase } from "./supabaseClient";
 import * as Platform from "react-native";
-import { Ionicons as IoniconsNative } from "@expo/vector-icons";
-import { Ionicons as IoniconsWeb } from "react-native-vector-icons/Ionicons";
+
 import {
   HomeScreen,
   TeamsScreen,
@@ -36,17 +35,9 @@ import {
 } from "./screens";
 import { fetchPlayers } from "./features/players/playersSlice";
 import { fetchTeams } from "./features/teams/teamsSlice";
-import { useDispatch } from "react-redux";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
-
-let Ionicons = IoniconsNative; // Assign the default (native) icon set to Ionicons
-
-// Conditional assignment for web platform
-if (Platform.OS === "web") {
-  Ionicons = IoniconsWeb;
-}
 
 const MyDrawerTheme = {
   ...DefaultTheme,
@@ -58,26 +49,24 @@ const MyDrawerTheme = {
     text: "#001A40",
     border: "#ffffff",
     notification: "#25BEB9",
-
-    // Further adjustment for clarity and visibility
-    activeTintColor: "#FFFFFF", // Bright yellow for selected item text, ensuring high visibility
-    activeBackgroundColor: "#136C6F", // Deep teal for the background of the selected item
-    inactiveTintColor: "#A7E5E3", // Light teal for text of non-selected items
-    inactiveBackgroundColor: "#003366", // Navy blue for background of non-selected items
+    activeTintColor: "#FFFFFF",
+    activeBackgroundColor: "#136C6F",
+    inactiveTintColor: "#A7E5E3",
+    inactiveBackgroundColor: "#003366",
   },
 };
 
 const customLightTheme = {
   ...lightTheme,
-  "color-primary-100": "#CCD6E4", // Very light blue, for background elements
-  "color-primary-200": "#99ADC9", // Lighter blue, for low emphasis areas
-  "color-primary-300": "#6684AE", // Medium blue, for informational elements
-  "color-primary-400": "#336B93", // Rich blue, for interactive or highlighted components
-  "color-primary-500": "#003366", // Navy blue for primary action items
-  "color-primary-600": "#2A9DF4", // Cerulean Blue for active states and focus elements
-  "color-primary-700": "#00224D", // Deeper navy blue for text and critical icons
-  "color-primary-800": "#001A40", // Very dark navy for headers and emphasized text
-  "color-primary-900": "#001334", // Nearly black navy for footer and dense text areas
+  "color-primary-100": "#CCD6E4",
+  "color-primary-200": "#99ADC9",
+  "color-primary-300": "#6684AE",
+  "color-primary-400": "#336B93",
+  "color-primary-500": "#003366",
+  "color-primary-600": "#2A9DF4",
+  "color-primary-700": "#00224D",
+  "color-primary-800": "#001A40",
+  "color-primary-900": "#001334",
 };
 
 function AuthNavigator() {
@@ -104,206 +93,35 @@ function ProfileNavigator() {
 function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="Home">
-      <Drawer.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "home" : "home-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Teams"
-        component={TeamsScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "people" : "people-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Players"
-        component={PlayersScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "person" : "person-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Captains"
-        component={CaptainsScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "shield-checkmark" : "shield-checkmark-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="DraftRoom"
-        component={DraftRoomScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "clipboard" : "clipboard-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="ChatRoom"
-        component={ChatRoomScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "chatbubbles" : "chatbubbles-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="PlayerRankings"
-        component={PlayerRankingsScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "bar-chart" : "bar-chart-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="TeamRankings"
-        component={TeamRankingsScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "podium" : "podium-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Awards"
-        component={AwardsScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "ribbon" : "ribbon-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="RedeemPoints"
-        component={RedeemPointsScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "gift" : "gift-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="QuizMe"
-        component={QuizMeScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "help-circle" : "help-circle-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="StudyGuide"
-        component={StudyGuideScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "book" : "book-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Records"
-        component={RecordsScreen}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "list" : "list-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
-      <Drawer.Screen
-        name="Profile"
-        component={ProfileNavigator}
-        options={{
-          drawerIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? "person-circle" : "person-circle-outline"}
-              color={color}
-              size={size}
-            />
-          ),
-        }}
-      />
+      <Drawer.Screen name="Home" component={HomeScreen} />
+      <Drawer.Screen name="Teams" component={TeamsScreen} />
+      <Drawer.Screen name="Players" component={PlayersScreen} />
+      <Drawer.Screen name="Captains" component={CaptainsScreen} />
+      <Drawer.Screen name="DraftRoom" component={DraftRoomScreen} />
+      <Drawer.Screen name="ChatRoom" component={ChatRoomScreen} />
+      <Drawer.Screen name="PlayerRankings" component={PlayerRankingsScreen} />
+      <Drawer.Screen name="TeamRankings" component={TeamRankingsScreen} />
+      <Drawer.Screen name="Awards" component={AwardsScreen} />
+      <Drawer.Screen name="RedeemPoints" component={RedeemPointsScreen} />
+      <Drawer.Screen name="QuizMe" component={QuizMeScreen} />
+      <Drawer.Screen name="StudyGuide" component={StudyGuideScreen} />
+      <Drawer.Screen name="Records" component={RecordsScreen} />
+      <Drawer.Screen name="Profile" component={ProfileNavigator} />
     </Drawer.Navigator>
   );
 }
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userEmail, setUserEmail] = useState(null); // State to hold the email
-  // const dispatch = useDispatch();
+  const [userEmail, setUserEmail] = useState(null);
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setIsAuthenticated(!!session);
-        setUserEmail(session?.user?.email || null); // Update userEmail state
+        setUserEmail(session?.user?.email || null);
       }
     );
-    // dispatch(fetchPlayers());
-    // dispatch(fetchTeams());
 
     return () => authListener?.unsubscribe();
   }, [supabase]);
@@ -314,11 +132,7 @@ function App() {
         <ThemeContextProvider>
           <ApplicationProvider {...eva} theme={customLightTheme}>
             <NavigationContainer theme={MyDrawerTheme}>
-              {isAuthenticated ? (
-                <DrawerNavigator/>
-              ) : (
-                <AuthNavigator />
-              )}
+              {isAuthenticated ? <DrawerNavigator /> : <AuthNavigator />}
             </NavigationContainer>
           </ApplicationProvider>
         </ThemeContextProvider>
