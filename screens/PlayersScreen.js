@@ -1,16 +1,24 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
   FlatList,
   ActivityIndicator,
   StyleSheet,
+  Button,
 } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Card, Avatar } from "@ui-kitten/components";
+import { fetchPlayers } from "../features/players/playersSlice";
 
 const PlayersScreen = () => {
-  const { players } = useSelector((state) => state.players);
+  const dispatch = useDispatch();
+  const players = useSelector((state) => state.players.players);
+  const loading = useSelector((state) => state.players.loading);
+
+  useEffect(() => {
+    dispatch(fetchPlayers());
+  }, [dispatch]);
 
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
@@ -24,12 +32,16 @@ const PlayersScreen = () => {
   );
 
   return (
-    <FlatList
-      data={players}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      contentContainerStyle={styles.listContainer}
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={players}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContainer}
+      />
+      {loading ? <ActivityIndicator size="large" color="#0000ff" /> : null}
+      <Button title="Refresh" onPress={() => dispatch(fetchPlayers())} />
+    </View>
   );
 };
 

@@ -14,46 +14,39 @@ import {
   Button,
   useTheme,
 } from "@ui-kitten/components";
-import { ThemeContext } from "../theme-context"; // Ensure this is correctly set up and exported
+import { ThemeContext } from "../theme-context";
 import { supabase } from "../supabaseClient";
 import { AirtableApiKey, AirtableBaseId } from "../airtableconfig";
 
 const ProfileScreen = ({ navigation }) => {
   const themeContext = useContext(ThemeContext);
-  const theme = useTheme(); // Fetch current theme styles
+  const theme = useTheme();
   const [userEmail, setUserEmail] = useState("");
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let authListener;
-    let error;
+
+    const handleAuthStateChange = (event, session) => {
+      if (session && session.user) {
+        setUserEmail(session.user.email);
+        fetchRecords(session.user.email);
+      } else {
+        setUserEmail("");
+        // navigation.navigate("Login");
+      }
+    };
 
     try {
-      const { data: listenerData, error: listenerError } =
-        supabase.auth.onAuthStateChange((event, session) => {
-          if (session && session.user) {
-            setUserEmail(session.user.email);
-            fetchRecords(session.user.email);
-          } else {
-            setUserEmail("");
-            // navigation.navigate("Login");
-          }
-        });
-
-      authListener = listenerData;
-      error = listenerError;
+      authListener = supabase.auth.onAuthStateChange(handleAuthStateChange);
     } catch (err) {
-      error = err;
-    }
-
-    if (error) {
-      console.error("Failed to set up auth listener:", error.message);
+      console.error("Failed to set up auth listener:", err.message);
     }
 
     // return () => {
     //   if (authListener) {
-    //     authListener.data.unsubscribe();
+    //     authListener.unsubscribe();
     //   }
     // };
   }, []);
@@ -81,8 +74,8 @@ const ProfileScreen = ({ navigation }) => {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
-      setUserEmail(""); // Reset userEmail state on sign-out
-      navigation.navigate("Home");
+      // setUserEmail("");
+      // navigation.navigate("Home");
     } catch (error) {
       console.error("Error signing out:", error.message);
       Alert.alert("Sign Out Failed", error.message || "Failed to sign out.");
@@ -156,18 +149,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 10,
-  },
-  button: {
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  refreshButton: {
-    backgroundColor: "#007bff",
-    borderColor: "#007bff",
-  },
-  signOutButton: {
-    backgroundColor: "#ef476f",
-    borderColor: "#ef476f",
   },
 });
 
