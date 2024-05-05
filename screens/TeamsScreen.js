@@ -1,55 +1,72 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Text,
   FlatList,
   StyleSheet,
+  View,
+  ActivityIndicator,
+  Button,
 } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Card, Avatar } from "@ui-kitten/components";
+import { fetchTeams } from "../features/teams/teamsSlice";
 
 const TeamsScreen = () => {
-  const { teams } = useSelector((state) => state.teams);
+  const dispatch = useDispatch();
+  const { teams, loading } = useSelector((state) => state.teams);
+
+  useEffect(() => {
+    dispatch(fetchTeams());
+  }, [dispatch]);
+
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
       <Avatar source={{ uri: item.fields.Logo }} style={styles.avatar} />
-      <Text style={styles.name}>{item.fields.Name}</Text>
-      <Text style={styles.name}>{item.fields.Camptain}</Text>
-      <Text style={styles.name}>{item.fields.TeamId}</Text>
+      <View style={styles.cardContent}>
+        <Text style={styles.name}>{item.fields.Name}</Text>
+        <Text style={styles.info}>Captain: {item.fields.Captain}</Text>
+        <Text style={styles.info}>Team ID: {item.fields.TeamId}</Text>
+      </View>
     </Card>
   );
+  const handleRefresh = () => {
+    dispatch(fetchTeams());
+  };
 
   return (
-    <FlatList
-      data={teams}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={styles.listContainer}
-    />
+    <View style={styles.container}>
+      {loading ? <ActivityIndicator size="large" color="#0000ff" /> : null}
+      <Button title="Refresh" onPress={handleRefresh} />
+      <FlatList
+        data={teams}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContainer}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  listContainer: {
-    padding: 16,
-  },
   card: {
-    marginVertical: 8,
+    margin: 8,
+    padding: 16,
+    flexDirection: "row",
   },
   avatar: {
     width: 64,
     height: 64,
-    alignSelf: "center",
+    marginRight: 16,
+  },
+  cardContent: {
+    flex: 1,
   },
   name: {
     fontSize: 18,
     fontWeight: "bold",
-    textAlign: "center",
-    marginTop: 8,
+  },
+  info: {
+    marginTop: 4,
   },
 });
 

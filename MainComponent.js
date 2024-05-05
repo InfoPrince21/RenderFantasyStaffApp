@@ -2,16 +2,10 @@ import React, { useState, useEffect } from "react";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
-import {
-  ApplicationProvider,
-  IconRegistry,
-  Layout,
-} from "@ui-kitten/components";
-import { EvaIconsPack } from "@ui-kitten/eva-icons";
+import { ApplicationProvider } from "@ui-kitten/components";
 import * as eva from "@eva-design/eva";
-import { mapping, light as lightTheme } from "@eva-design/eva";
-import { ThemeContextProvider } from "./theme-context"; // Import ThemeContextProvider
-import { store } from "./redux/store";
+import { light as lightTheme } from "@eva-design/eva";
+import { ThemeContextProvider } from "./theme-context";
 import { supabase } from "./supabaseClient";
 import * as Platform from "react-native";
 import { Ionicons as IoniconsNative } from "@expo/vector-icons";
@@ -39,7 +33,7 @@ import {
   EditProfileScreen,
 } from "./screens";
 import { fetchPlayers } from "./features/players/playersSlice";
-import { fetchTeams } from "./features/teams/teamsSlice"
+import { fetchTeams } from "./features/teams/teamsSlice";
 import { useDispatch } from "react-redux";
 
 const Drawer = createDrawerNavigator();
@@ -96,10 +90,10 @@ function AuthNavigator() {
   );
 }
 
-function ProfileNavigator({userEmail}) {
+function ProfileNavigator({ userEmail }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MyProfile" component={ProfileScreen}/>
+      <Stack.Screen name="MyProfile" component={ProfileScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     </Stack.Navigator>
   );
@@ -306,7 +300,7 @@ function DrawerNavigator({ userEmail }) {
 function MainComponent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState(null); // State to hold the email
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -315,11 +309,11 @@ function MainComponent() {
         setUserEmail(session?.user?.email || null); // Update userEmail state
       }
     );
-    dispatch(fetchPlayers());
-    dispatch(fetchTeams());
+    // dispatch(fetchPlayers());
+    // dispatch(fetchTeams());
 
     return () => authListener?.unsubscribe();
-  }, [supabase, dispatch]);
+  }, [supabase]);
 
   return (
     <>
@@ -337,6 +331,5 @@ function MainComponent() {
     </>
   );
 }
-
 
 export default MainComponent;
