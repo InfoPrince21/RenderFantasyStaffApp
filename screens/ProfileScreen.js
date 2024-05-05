@@ -44,11 +44,11 @@ const ProfileScreen = ({ navigation }) => {
       console.error("Failed to set up auth listener:", err.message);
     }
 
-    // return () => {
-    //   if (authListener) {
-    //     authListener.unsubscribe();
-    //   }
-    // };
+    return () => {
+      if (authListener) {
+        authListener.unsubscribe();
+      }
+    };
   }, []);
 
   const fetchRecords = async (email) => {

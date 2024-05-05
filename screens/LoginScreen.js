@@ -1,42 +1,47 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Alert, Image } from "react-native";
-import { Input, Button } from "@ui-kitten/components"; // Import UI Kitten components
+import {
+  View,
+  StyleSheet,
+  Alert,
+  Image,
+  ActivityIndicator,
+} from "react-native";
+import { Input, Button } from "@ui-kitten/components";
 import { supabase } from "../supabaseClient";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // State to manage loading state
 
   async function signInWithEmail() {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
+    setIsLoading(true); // Start loading
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
 
-    if (error) {
-      console.error("Error signing in:", error.message);
-      Alert.alert("Sign In Failed", error.message);
-      return;
-    } 
+      if (error) throw error;
 
-    if (data) {
       console.log("User signed in successfully:", data);
-      // Optionally navigate to another screen here
+      navigation.navigate("Home"); // Navigate to Home after success
+    } catch (error) {
+      Alert.alert("Sign In Failed", error.message);
+    } finally {
+      setIsLoading(false); // Stop loading regardless of outcome
     }
   }
 
-
   return (
     <View style={styles.container}>
-      <Image
-        source={require("../assets/logo1.webp")} // Adjust path as necessary
-        style={styles.logo}
-      />
+      <Image source={require("../assets/logo1.webp")} style={styles.logo} />
       <Input
         label="Email"
         value={email}
         onChangeText={setEmail}
         style={styles.input}
+        accessibilityLabel="Enter your email"
       />
       <Input
         label="Password"
@@ -44,10 +49,15 @@ const LoginScreen = ({ navigation }) => {
         value={password}
         onChangeText={setPassword}
         style={styles.input}
+        accessibilityLabel="Enter your password"
       />
-      <Button onPress={signInWithEmail} style={styles.button}>
-        Sign In
-      </Button>
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <Button onPress={signInWithEmail} style={styles.button}>
+          Sign In
+        </Button>
+      )}
       <Button
         appearance="ghost"
         onPress={() => navigation.navigate("ForgotPassword")}

@@ -101,15 +101,6 @@ function ProfileNavigator() {
   );
 }
 
-function HomeNavigator() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MyProfile" component={ProfileScreen} />
-      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-    </Stack.Navigator>
-  );
-}
-
 function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="Home">
