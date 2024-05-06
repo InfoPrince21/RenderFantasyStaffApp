@@ -39,22 +39,22 @@ import { fetchTeams } from "./features/teams/teamsSlice";
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
-const MyDrawerTheme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: "#003366",
-    background: "#ffffff",
-    card: "#ffffff",
-    text: "#001A40",
-    border: "#ffffff",
-    notification: "#25BEB9",
-    activeTintColor: "#FFFFFF",
-    activeBackgroundColor: "#136C6F",
-    inactiveTintColor: "#A7E5E3",
-    inactiveBackgroundColor: "#003366",
-  },
-};
+// const MyDrawerTheme = {
+//   ...DefaultTheme,
+//   colors: {
+//     ...DefaultTheme.colors,
+//     primary: "#003366",
+//     background: "#ffffff",
+//     card: "#ffffff",
+//     text: "#001A40",
+//     border: "#ffffff",
+//     notification: "#25BEB9",
+//     activeTintColor: "#FFFFFF",
+//     activeBackgroundColor: "#136C6F",
+//     inactiveTintColor: "#A7E5E3",
+//     inactiveBackgroundColor: "#003366",
+//   },
+// };
 
 const customLightTheme = {
   ...lightTheme,
@@ -131,7 +131,7 @@ function App() {
       <Provider store={store}>
         <ThemeContextProvider>
           <ApplicationProvider {...eva} theme={customLightTheme}>
-            <NavigationContainer theme={MyDrawerTheme}>
+            <NavigationContainer >
               {isAuthenticated ? <DrawerNavigator /> : <AuthNavigator />}
             </NavigationContainer>
           </ApplicationProvider>
