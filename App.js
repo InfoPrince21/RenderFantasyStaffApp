@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { Provider } from "react-redux";
+import { Button } from "react-native";
 import { store } from "./redux/store";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -92,7 +93,15 @@ function ProfileNavigator() {
 
 function DrawerNavigator() {
   return (
-    <Drawer.Navigator initialRouteName="Home">
+    <Drawer.Navigator
+      initialRouteName="Home"
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerLeft: () => (
+          <Button onPress={() => navigation.toggleDrawer()} title="Menu" />
+        ),
+      })}
+    >
       <Drawer.Screen name="Home" component={HomeScreen} />
       <Drawer.Screen name="Teams" component={TeamsScreen} />
       <Drawer.Screen name="Players" component={PlayersScreen} />

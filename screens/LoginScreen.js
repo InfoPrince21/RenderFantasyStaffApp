@@ -25,7 +25,7 @@ const LoginScreen = ({ navigation }) => {
       if (error) throw error;
 
       console.log("User signed in successfully:", data);
-      navigation.navigate("Home"); // Navigate to Home after success
+      // navigation.navigate("Login"); // Navigate to Home after success
     } catch (error) {
       Alert.alert("Sign In Failed", error.message);
     } finally {

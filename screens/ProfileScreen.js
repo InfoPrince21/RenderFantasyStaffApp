@@ -34,7 +34,7 @@ const ProfileScreen = ({ navigation }) => {
         fetchRecords(session.user.email);
       } else {
         setUserEmail("");
-        navigation.navigate("Home");
+        // navigation.navigate("Login");
       }
     };
 
@@ -75,7 +75,7 @@ const ProfileScreen = ({ navigation }) => {
     try {
       await supabase.auth.signOut();
       setUserEmail("");
-      navigation.navigate("Home");
+      // navigation.navigate("Home");
     } catch (error) {
       console.error("Error signing out:", error.message);
       Alert.alert("Sign Out Failed", error.message || "Failed to sign out.");
